@@ -1,0 +1,2073 @@
+/* ── Cascade layer order ──────────────────────────────────────────────
+   First-listed layer = lowest priority. Bootstrap is slotted BELOW every
+   Tailwind layer, and the Dheepam design system below stays *unlayered*,
+   which outranks all layered CSS regardless of specificity.
+
+   This ordering is load-bearing. Bootstrap ships unlayered by default, and
+   unlayered rules beat layered ones — imported plainly, Reboot would win
+   against every Tailwind utility (`flex`, `hidden`, `absolute`) and against
+   the token classes in this file. Importing it into a named layer that sorts
+   first is what lets the two systems coexist.
+
+   Fonts are no longer @imported here: a CSS-in-CSS @import serialises
+   (index.css → fonts.css → font files) and blocks first paint. They are
+   preconnected and linked from index.html instead. */
+@layer bootstrap, theme, base, components, utilities;
+
+@import 'bootstrap/dist/css/bootstrap.min.css' layer(bootstrap);
+@import 'tailwindcss';
+
+/* Keep the documentation out of the production bundle.
+
+   Tailwind v4 auto-detects sources from the project root, and CLAUDE.md and
+   PROJECT_STATUS.md now live there (2026-08-12, repo root moved for Vercel).
+   Tailwind cannot tell prose from JSX, so ordinary English words in those files
+   that happen to be utility names were emitting real rules: `.contents`,
+   `.collapse`, `.static`, `.table`, `.shadow`, `.flex-shrink` and the whole
+   `--tw-backdrop-*` @property block — 1,746 bytes of CSS nothing on the site
+   uses, and growing every time PROJECT_STATUS.md does.
+
+   This is a build directive with zero visual effect: it removes only utilities
+   no .tsx references. Verified byte-identical to a build with the .md files
+   physically removed. */
+@source not "../**/*.md";
+
+/*
+  ╔══════════════════════════════════════════════════════════════╗
+  ║   DHEEPAM — EDITORIAL LIGHT DESIGN SYSTEM                    ║
+  ║   Light surfaces only. Black reserved for typography.        ║
+  ╚══════════════════════════════════════════════════════════════╝
+*/
+
+@theme {
+  /* Surfaces — 70% of the page */
+  --color-ivory:       #FFFDF7;
+  --color-warm-white:  #FFFBF5;
+  --color-cream:       #F8F0E3;
+  --color-sacred:      #F5F1B5;
+  --color-beige:       #F3E9D8;
+  --color-champagne:   #F4E6C8;
+  --color-blush:       #F7E5DD;
+
+  /* Accents — used sparingly */
+  --color-gold:        #C9A227;
+  --color-gold-warm:   #E3B341;
+  --color-flame:       #F47A21;
+  --color-saffron:     #E8A33A;
+  --color-maroon:      #8F1D25;
+
+  /* Typography */
+  --color-ink:         #111111;
+  --color-ink-soft:    #333333;
+  --color-ink-mute:    #666666;
+
+  --font-serif: 'Fraunces', Georgia, serif;
+  /* Secondary/body face — **Figtree** since 2026-08-12 (was Inter). One swap at
+     the token covers body prose, nav, CTAs, labels, eyebrows, metadata and form
+     fields, because every consumer reads `--font-sans` or `--font-ui` rather
+     than naming a family. Only 400 / 500 / 600 are loaded — the three the
+     system actually uses (prose, nav links, labels + CTAs). */
+  --font-sans:  'Figtree', system-ui, sans-serif;
+  /* UI voice — navigation, CTAs, labels, controls. Same face as body copy
+     under the current type system; kept as its own token so interface text can
+     diverge from prose again without touching consumers. */
+  --font-ui:    'Figtree', system-ui, sans-serif;
+}
+
+:root {
+  /* Editorial grid — one container width for every section on the page, so
+     headings, imagery and CTAs all land on the same rails. */
+  --container-wide: 1480px;
+  --container-editorial: 1480px;
+  /* Banner only — see `.shell-hero`. */
+  --container-hero: 1520px;
+  --container-read: 880px;
+  /* Capped lower than the old 80px: past ~1480px the container itself supplies
+     the breathing room, so a large gutter only shrinks usable width. */
+  --gutter: clamp(20px, 3.4vw, 60px);
+
+  /* ── Spacing ladder ──
+     Every vertical gap on the page resolves to one of these, so the rhythm
+     stays consistent without hand-tuning each section.
+
+     Tightened ~35% from the original ladder (was 24–40 / 48–72 / 96–160 /
+     120–200). The old values were tuned for a page that ran to nine folds;
+     the brief calls for compact, content-focused sections, and at 1920 the
+     160px section pad alone read as a blank band between blocks. The ratios
+     between the four steps are unchanged, so the rhythm still reads as one
+     system — only the amplitude came down. */
+  --space-sm:      clamp(18px, 1.6vw, 28px);  /* label → heading, tight pairs   */
+  --space-content: clamp(36px, 3.4vw, 56px);  /* between blocks inside a section */
+  --space-section: clamp(64px, 6vw, 104px);   /* between sections               */
+  --space-major:   clamp(80px, 7.5vw, 128px); /* major storytelling transitions  */
+
+  /* ── Nav height ──
+     Tokenised so the bar, the hero's top padding and the mobile sheet all read
+     the same number. Previously each hard-coded its own, and the sheet was
+     still sized against a 76px bar that has not existed since it grew to
+     112/92 — see the mobile sheet in Navbar.tsx.
+     112px of fixed header is right on a desktop and far too much on a phone,
+     where it costs a sixth of the viewport before any content shows. */
+  --nav-h:          112px;
+  --nav-h-scrolled:  92px;
+
+  /* ── CTA box height ──
+     One button height for the whole homepage, whatever the variant. The
+     padding-driven boxes measured 55px (solid/gold), 53px (outline) and 29px
+     (line), so the page had four different click targets for the same tier of
+     action. Consumed by the HOME PAGE block near the foot of this file.
+     **44px since 2026-08-12** (was 52): the brief asks for a more compact,
+     premium button, and the height is bought back out of vertical padding only
+     — the label stays at 14px. 44 is also the floor a touch target may not go
+     under, so this is as compact as the system goes. */
+  --cta-h: 44px;
+  /* Pill corner. One token so the nav's Contact Us, the section CTAs and the
+     closing button cannot drift apart — every one of them reads this. */
+  --cta-radius: 999px;
+
+  /* ── Image corner radius ──
+     Two steps, by brief: 16px on the large feature plates (Our Story, the
+     product tiles, the Lamp Lighting media, the Neivedhyam slide) and 8px on
+     the small ones (the festival cards, which fold to ~120px-wide thumbs below
+     md). Constant at every breakpoint — the frames change size, the corner does
+     not. Consumed only under `.home-page`; the hero banner is deliberately
+     excluded (it is full-bleed and dissolves into the nav — a corner there
+     would re-draw the boundary the blend exists to remove). */
+  --img-radius:    16px;
+  --img-radius-sm:  8px;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Type scale tokens — desktop ──
+     Fixed steps rather than fluid clamps: the scale is the design decision,
+     and H1 is deliberately held at 64px. Impact comes from the grid, imagery
+     and whitespace around the type, not from oversizing it. */
+  --fs-h1:      64px; /* 4rem */
+  --fs-h2:      48px; /* 3rem */
+  --fs-h3:      36px; /* 2.25rem */
+  --fs-h4:      28px; /* 1.75rem */
+  --fs-h5:      24px; /* 1.5rem */
+  --fs-h6:      20px; /* 1.25rem */
+  --fs-lead:    20px;
+  --fs-body-lg: 18px; /* 1.125rem */
+  --fs-body:    16px; /* 1rem */
+  --fs-body-sm: 14px; /* 0.875rem */
+  --fs-caption: 12px; /* 0.75rem — caption / label tier */
+  --fs-micro:   12px;
+
+  /* Text colours */
+  --ink:       #111111;
+  --ink-soft:  #333333;
+  --ink-mute:  #666666;
+  --ink-gold:  #C9A227;
+  /* Small gold text needs a deeper value: #C9A227 only reaches 2.4:1 on ivory,
+     which fails at 12px. This clears 4.5:1 on every section surface while
+     still reading as antique gold. Rules and ornament keep --ink-gold. */
+  --ink-gold-text: #7D620D;
+  --ink-maroon:#8F1D25;
+}
+
+/* ── Type-scale breakpoints ──
+   The three steps and every size in them are unchanged from the Fraunces/Inter
+   system; only the widths they switch at moved, from the old 1024/640 pair onto
+   Bootstrap's boundaries so type and layout break at the same places.
+
+   The tablet step now starts at 1199.98 rather than 1024 because the 992–1199
+   band cannot carry the desktop H1: the hero headline sits in 7 of 12 columns,
+   ≈520px at 992px wide, and "Where Ritual Meets" sets to ≈560px at 64px. The
+   step-down is what keeps it on two lines instead of three. */
+
+/* Tablet + small laptop — 576px through 1199.98px */
+@media (max-width: 1199.98px) {
+  :root {
+    --nav-h: 84px;
+    --nav-h-scrolled: 72px;
+    --fs-h1: 52px;
+    --fs-h2: 44px;
+    --fs-h3: 34px;
+    --fs-h4: 27px;
+    --fs-h5: 23px;
+    --fs-h6: 19px;
+    --fs-lead: 18px;
+    --fs-body-lg: 17px;
+  }
+}
+
+/* Mobile — below Bootstrap's sm */
+@media (max-width: 575.98px) {
+  :root {
+    --nav-h: 74px;
+    --nav-h-scrolled: 64px;
+    --fs-h1: 44px;
+    --fs-h2: 36px;
+    --fs-h3: 29px;
+    --fs-h4: 26px;
+    --fs-h5: 22px;
+    --fs-h6: 18px;
+    --fs-lead: 18px;
+    --fs-body-lg: 16px;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* `clip` rather than `hidden`: it contains the bleeding decorative layers
+   (mandalas, warm glows) without creating a scroll container, so the
+   position:sticky elements on the sub-pages keep working. */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  background: #FFFDF7;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+::selection { background: rgba(201, 162, 39, 0.24); color: #111111; }
+
+/* Slim editorial scrollbar rather than hiding it entirely */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #F8F0E3; }
+::-webkit-scrollbar-thumb { background: rgba(201, 162, 39, 0.45); }
+::-webkit-scrollbar-thumb:hover { background: rgba(201, 162, 39, 0.7); }
+
+button { font: inherit; border: 0; background: none; cursor: pointer; color: inherit; }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ──────────────────────────────────────────────
+   LAYOUT — expansive editorial containers
+   Each section picks the width that suits it.
+   ────────────────────────────────────────────── */
+.shell        { width: 100%; margin-inline: auto; padding-inline: var(--gutter); max-width: var(--container-editorial); }
+.shell-wide   { width: 100%; margin-inline: auto; padding-inline: var(--gutter); max-width: var(--container-wide); }
+.shell-read   { width: 100%; margin-inline: auto; padding-inline: var(--gutter); max-width: var(--container-read); }
+.shell-bleed  { width: 100%; padding-inline: clamp(16px, 2.5vw, 48px); }
+/* The banner is the one deliberate exception to the single-container rule: the
+   brief sets it 40px wider than the editorial rails so the headline sits a
+   little further out into the open amber. Applied after `.shell-wide` so it
+   wins on source order at equal specificity. */
+.shell-hero   { max-width: var(--container-hero); }
+
+/* Vertical rhythm tokens — one ladder the whole page steps on */
+.section      { padding-block: var(--space-section); }
+.section-tight{ padding-block: clamp(64px, 7vw, 112px); }
+/* Storytelling beats that earn extra room */
+.section-major{ padding-block: var(--space-major); }
+
+/* ── Products section proportions ──
+   This block used to be `.section-fold`: `min-height: 100vh` with flex centring,
+   so the section always claimed a full viewport whether or not its content
+   needed one. On a 1080p desktop that left ~180px of dead space above the
+   eyebrow and below the tiles, and it capped the section's own top padding at
+   90px to stay inside the fold (the open question in the backlog). The brief
+   rules out oversized section heights, so the fold is gone and the section is
+   now sized by its content on the normal spacing ladder.
+
+   The tile ratio is what was worth keeping. 13/6 follows the scene photograph
+   (1846×852) so it is framed with almost no crop. The compound selector keeps
+   it ahead of the later `.tile-plinth` aspect rule. */
+.fold-head { margin-bottom: clamp(26px, 3vw, 48px) !important; }
+
+@media (min-width: 576px) {
+  .tile-plinth.fold-plinth { aspect-ratio: 13 / 6; height: auto; }
+}
+
+/* ── Phones ──
+   Stacked, the tiles inherit the base 5:4 plinth, which crops the scene
+   photograph (2.17:1) by ~42% of its width — straight through the bottles it
+   exists to show. The two treatments want different frames at this size, so
+   they get them: the scene keeps its native 13/6 and is not cropped at all,
+   while the cut-out packshot keeps a taller frame so the sticks do not shrink
+   to a sliver on the plinth. */
+@media (max-width: 575.98px) {
+  .tile-plinth.fold-plinth { aspect-ratio: 4 / 3; }
+  .tile-plinth.fold-plinth.is-scene { aspect-ratio: 13 / 6; }
+}
+
+.grid12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(20px, 2.4vw, 40px); }
+
+/* Below Bootstrap's lg the 12-col editorial grid folds to 6, and children that
+   were placed by inline `gridColumn` return to full width so sections recompose
+   instead of collapsing into slivers.
+
+   `:not([class*="col-"])` is the important part: the old blanket
+   `.grid12 > *` rule carried `!important` AND outranked `.col-2up` on
+   specificity (0,1,1 vs 0,1,0), so the product tiles were forced to one-up from
+   1024px down — the exact opposite of what their own rule asked for, and the
+   reason that section ran so tall on tablet. Opting the explicit column
+   utilities out of the blanket lets them keep controlling themselves. */
+@media (max-width: 991.98px) {
+  .grid12 { grid-template-columns: repeat(6, 1fr); }
+  .grid12 > *:not([class*='col-']) { grid-column: 1 / -1 !important; margin-top: 0 !important; }
+}
+
+/* Product gallery: 4-up desktop, 2-up tablet, 1-up phone */
+.col-4up { grid-column: span 3; }
+@media (max-width: 991.98px) { .col-4up { grid-column: span 3 !important; } }
+@media (max-width: 575.98px) { .col-4up { grid-column: 1 / -1 !important; } }
+
+/* Editorial product tiles: 2-up from sm up, 1-up on phones */
+.col-2up { grid-column: span 6; }
+@media (max-width: 991.98px) { .col-2up { grid-column: span 3 !important; } }
+@media (max-width: 575.98px) { .col-2up { grid-column: 1 / -1 !important; } }
+
+/* Festival cards: 3-up from md up, stacked on phones. `.col-` prefix so the
+   `.grid12 > *` collapse leaves them alone (see the note above `.col-2up`).
+   767.98 is Bootstrap's md — three cards in a 6-column grid measure ~160px at
+   576px wide, which is narrower than the card's own type wants. */
+.col-3up { grid-column: span 4; }
+@media (max-width: 991.98px) { .col-3up { grid-column: span 2 !important; } }
+@media (max-width: 767.98px)  { .col-3up { grid-column: 1 / -1 !important; } }
+
+/* ── Footer columns ──
+   Named with a `col-` prefix so they opt out of the blanket collapse above and
+   place themselves at every band: 4 + (2×4) on desktop, brand over a 2-up link
+   grid on tablet, fully stacked on phones. Without this the footer became five
+   stacked full-width blocks below 992px, which is most of its height. */
+.col-footer-brand { grid-column: span 4; }
+.col-footer-links { grid-column: span 2; }
+@media (max-width: 991.98px) {
+  .col-footer-brand { grid-column: 1 / -1 !important; }
+  .col-footer-links { grid-column: span 3 !important; }
+}
+@media (max-width: 575.98px) {
+  .col-footer-links { grid-column: 1 / -1 !important; }
+}
+
+/* ── Product tile ──
+   A studio-backdrop plinth the cut-out packshot is composed into, so the tile
+   reads as product photography rather than an icon on a swatch. */
+.tile-plinth {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 5 / 4;
+  background:
+    radial-gradient(120% 90% at 50% 108%, rgba(201,162,39,0.16) 0%, transparent 58%),
+    linear-gradient(176deg, #FDF8EC 0%, #F6ECD8 62%, #F1E3CB 100%);
+}
+.tile-chip {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  background: #FFFDF7;
+  color: var(--ink-maroon);
+  padding: 9px 15px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* Packshots vary from a single tall bottle (232×760) to a wide three-pack
+   (934×760). A single height would leave the narrow ones swimming in the
+   landscape tile, so each sets its own via --shot-h. */
+.tile-shot {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  height: var(--shot-h, 78%);
+  width: auto;
+  max-width: 86%;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 30px rgba(17, 17, 17, 0.18));
+  transition: transform 1.1s var(--ease-out-soft);
+}
+.tile-link:hover .tile-shot { transform: translateX(-50%) translateY(-14px); }
+
+/* Scene photography (product shot on its own set) fills the frame instead of
+   floating on the plinth, so the backdrop gradient and contact shadow are not
+   used. `object-position` biases the crop down to the bottles, since the tile
+   is wider than the source and cover trims top and bottom. */
+.tile-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 62%;
+  transition: transform 1.2s var(--ease-out-soft);
+}
+.tile-link:hover .tile-scene { transform: scale(1.045); }
+/* Contact shadow that keeps the pack grounded on the plinth */
+.tile-ground {
+  position: absolute;
+  bottom: 7%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 58%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, rgba(17,17,17,0.22) 0%, transparent 72%);
+}
+.tile-title { transition: color .45s var(--ease-out-soft); }
+.tile-link:hover .tile-title { color: var(--ink-maroon); }
+
+/* ══════════════════════════════════════════════
+   TYPOGRAPHY SYSTEM
+   Fraunces → H1–H6, section titles, display titles, quotes, major editorial
+              headings.
+   Inter    → body, UI, labels, CTAs, forms, nav — every other piece of text.
+   Every size resolves from a token, so the scale changes in one place.
+   ══════════════════════════════════════════════ */
+
+/* Serif display steps — Fraunces, weight 400 throughout. Emphasis comes from
+   scale, not weight, matching the rest of the system. */
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  color: var(--ink);
+}
+.h1 { font-size: var(--fs-h1); line-height: 1.05; letter-spacing: -1px; }
+.h2 { font-size: var(--fs-h2); line-height: 1.15; letter-spacing: -0.5px; }
+.h3 { font-size: var(--fs-h3); line-height: 1.2;  letter-spacing: -0.3px; }
+.h4 { font-size: var(--fs-h4); line-height: 1.25; letter-spacing: -0.2px; }
+.h5 { font-size: var(--fs-h5); line-height: 1.3; }
+.h6 { font-size: var(--fs-h6); line-height: 1.3; }
+
+/* Body steps — Inter throughout. `.micro` is a UI label and restates the
+   family explicitly in its own rule below (same face, kept for clarity). */
+.lead, .body-lg, .body, .body-sm, .caption, .micro {
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+.lead     { font-size: var(--fs-lead);    line-height: 1.5; color: var(--ink-soft); }
+.body-lg  { font-size: var(--fs-body-lg); line-height: 1.6; color: var(--ink-soft); }
+.body     { font-size: var(--fs-body);    line-height: 1.6; color: var(--ink-soft); }
+.body-sm  { font-size: var(--fs-body-sm); line-height: 1.5; color: var(--ink-soft); }
+.caption  { font-size: var(--fs-caption); line-height: 1.4; color: var(--ink-mute); }
+.micro {
+  font-family: var(--font-ui);   /* a label, not prose */
+  font-size: var(--fs-micro);
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-mute);
+}
+
+/* ══════════════════════════════════════════════
+   CLOSING SECTION
+   The single dark surface on the site, in brand maroon/burgundy with gold —
+   not a neutral black or brown. Only this block inverts; the footer beneath
+   it returns to the light palette.
+   ══════════════════════════════════════════════ */
+.closing {
+  /* Section-scoped tokens. Every value the closing CTA uses resolves to one of
+     these, so the block can be retuned from here without touching markup. */
+  --closing-gold:       var(--color-gold-warm);       /* ornament + accent ink  */
+  --closing-cream:      var(--color-ivory);           /* headline ink           */
+  --closing-lead-ink:   rgba(255, 251, 240, 0.82);
+  --closing-rule:       rgba(227, 179, 65, 0.42);     /* divider hairlines      */
+  --closing-outline:    rgba(227, 179, 65, 0.55);     /* media edge, CTA border */
+  --closing-linework-opacity: 0.15;                   /* mandala hairlines      */
+  --closing-kolam-opacity:    0.1;                    /* kolam lattice          */
+
+  /* Layout — media left, copy right, both centred. Tuned so the whole section
+     lands inside one fold: the grid is capped well under the 1480 shell and the
+     copy column outweighs the media, which is what keeps the 7:6 bloom short. */
+  --closing-pad:        clamp(40px, 4vw, 64px);       /* section padding-block  */
+  --closing-max:        1080px;                       /* grid cap inside shell  */
+  --closing-gap:        clamp(28px, 3.4vw, 60px);
+  --closing-copy-ratio: 1.42fr;
+  --closing-media-ratio: 7 / 6;
+  --closing-spark:      clamp(13px, 1.3vw, 20px);
+  --closing-stack:      clamp(14px, 1.4vw, 22px);     /* between copy blocks    */
+
+  background:
+    radial-gradient(120% 150% at 12% 0%, rgba(201, 162, 39, 0.22) 0%, transparent 55%),
+    linear-gradient(118deg, #6E1420 0%, #8F1D25 42%, #5C1019 100%);
+}
+.closing-head    { color: var(--closing-cream); }
+.closing-accent  { color: var(--closing-gold); }
+.closing-lead    { color: var(--closing-lead-ink); }
+
+/* Hairline gold edges so the block reads as an intentional panel */
+.closing::before,
+.closing::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.55), transparent);
+}
+.closing::before { top: 0; }
+.closing::after  { bottom: 0; }
+
+/* ── Layout ── */
+.closing-inner { padding-block: var(--closing-pad); }
+
+.closing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--closing-copy-ratio));
+  gap: var(--closing-gap);
+  align-items: center;
+  /* Capped *inside* the shell rather than by narrowing the shell — every other
+     section keeps its rails, and the bloom (which is sized by its column) stops
+     growing with the viewport, so the section height flattens past ~1200px. */
+  max-width: var(--closing-max);
+  margin-inline: auto;
+}
+@media (max-width: 991.98px) {
+  .closing-grid { grid-template-columns: minmax(0, 1fr); gap: clamp(24px, 3.6vw, 36px); }
+  /* Stacked, the bloom no longer needs to hold a column height — capping it
+     stops the photograph eating a whole screen before the copy appears. */
+  .closing-media { max-width: 340px; margin-inline: auto; }
+  /* …and the copy is capped with it, so the dividers (which span the column)
+     don't run 900px wide above a 340px bloom. Text stays left-aligned; only
+     the block is centred. */
+  .closing-copy { max-width: 560px; margin-inline: auto; }
+}
+@media (max-width: 575.98px) {
+  .closing-media { max-width: 260px; }
+}
+
+/* ── Media — photograph inside a lotus-bloom mask with a gold edge ── */
+.closing-media { position: relative; margin: 0; }
+.closing-media-frame { aspect-ratio: var(--closing-media-ratio); }
+.closing-media-frame svg { width: 100%; height: 100%; display: block; }
+.closing-media-edge { stroke: var(--closing-outline); }
+
+/* Four-point gold sparks sitting ON the bloom's crown and foot. The offsets are
+   where the outline actually crosses the horizontal centre — 1.35% of the frame
+   height in from either end — not eyeballed padding. Change the BLOOM path in
+   Footer.tsx and these have to be re-derived with it. */
+.closing-spark {
+  position: absolute;
+  left: 50%;
+  width: var(--closing-spark);
+  color: var(--closing-gold);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.closing-spark-top    { top: calc(1.35% - var(--closing-spark) / 2); }
+.closing-spark-bottom { bottom: calc(1.35% - var(--closing-spark) / 2); }
+
+/* ── Copy column ── */
+.closing-copy { display: flex; flex-direction: column; align-items: flex-start; }
+
+/* Divider hairline with a centred diamond — used above the lead and below the CTA */
+.closing-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  color: var(--closing-gold);
+}
+.closing-divider::before,
+.closing-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+}
+.closing-divider::before { background: linear-gradient(90deg, transparent, var(--closing-rule)); }
+.closing-divider::after  { background: linear-gradient(90deg, var(--closing-rule), transparent); }
+.closing-divider i {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border: 1px solid var(--closing-outline);
+  transform: rotate(45deg);
+}
+
+/* CTA — the shared gold pill (2026-08-12; it was an outlined gold hairline that
+   filled on hover). Nothing here is section-specific any more: `.cta.cta-gold`
+   supplies the fill, the ink label, the pill corner, the 44px box and the hover
+   lift, exactly as on the light sections. The only thing the dark band adds is a
+   soft drop so the pill sits *on* the maroon rather than in it. */
+.closing .closing-cta {
+  box-shadow: 0 14px 34px -18px rgba(20, 6, 2, 0.9);
+}
+
+/* ── Background linework: temple mandala right, kolam lattice bottom-left ──
+   Both are cropped by the section edges so they read as depth, not as motifs
+   placed to fill space. */
+.closing-mandala,
+.closing-kolam { position: absolute; pointer-events: none; }
+
+.closing-mandala {
+  right: -22%;
+  top: 50%;
+  width: min(760px, 52vw);
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  opacity: var(--closing-linework-opacity);
+  /* Fades out toward the copy column: at full strength the hairlines pass
+     directly behind the gold eyebrow and CTA and drop them to ~4.4:1. The fade
+     lives on this wrapper, not on the disc — the disc rotates, and a mask on it
+     would sweep the fade around with it. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.45) 34%, #000 68%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.45) 34%, #000 68%);
+}
+
+.closing-mandala-disc {
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.8'%3E%3Ccircle cx='100' cy='100' r='98'/%3E%3Ccircle cx='100' cy='100' r='86'/%3E%3Ccircle cx='100' cy='100' r='56'/%3E%3Ccircle cx='100' cy='100' r='34'/%3E%3Ccircle cx='100' cy='100' r='13'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.5'%3E%3Cpath d='M187.0 100.0L197.0 100.0M185.3 117.0L195.1 118.9M180.4 133.3L189.6 137.1M172.3 148.3L180.7 153.9M161.5 161.5L168.6 168.6M148.3 172.3L153.9 180.7M133.3 180.4L137.1 189.6M117.0 185.3L118.9 195.1M100.0 187.0L100.0 197.0M83.0 185.3L81.1 195.1M66.7 180.4L62.9 189.6M51.7 172.3L46.1 180.7M38.5 161.5L31.4 168.6M27.7 148.3L19.3 153.9M19.6 133.3L10.4 137.1M14.7 117.0L4.9 118.9M13.0 100.0L3.0 100.0M14.7 83.0L4.9 81.1M19.6 66.7L10.4 62.9M27.7 51.7L19.3 46.1M38.5 38.5L31.4 31.4M51.7 27.7L46.1 19.3M66.7 19.6L62.9 10.4M83.0 14.7L81.1 4.9M100.0 13.0L100.0 3.0M117.0 14.7L118.9 4.9M133.3 19.6L137.1 10.4M148.3 27.7L153.9 19.3M161.5 38.5L168.6 31.4M172.3 51.7L180.7 46.1M180.4 66.7L189.6 62.9M185.3 83.0L195.1 81.1'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.6'%3E%3Cpath d='M155.9 88.9Q176.9 87.0 185.0 100.0Q176.9 113.0 155.9 111.1M155.9 111.1Q176.0 117.5 178.5 132.5Q166.1 141.4 147.4 131.7M147.4 131.7Q163.6 145.2 160.1 160.1Q145.2 163.6 131.7 147.4M131.7 147.4Q141.4 166.1 132.5 178.5Q117.5 176.0 111.1 155.9M111.1 155.9Q113.0 176.9 100.0 185.0Q87.0 176.9 88.9 155.9M88.9 155.9Q82.5 176.0 67.5 178.5Q58.6 166.1 68.3 147.4M68.3 147.4Q54.8 163.6 39.9 160.1Q36.4 145.2 52.6 131.7M52.6 131.7Q33.9 141.4 21.5 132.5Q24.0 117.5 44.1 111.1M44.1 111.1Q23.1 113.0 15.0 100.0Q23.1 87.0 44.1 88.9M44.1 88.9Q24.0 82.5 21.5 67.5Q33.9 58.6 52.6 68.3M52.6 68.3Q36.4 54.8 39.9 39.9Q54.8 36.4 68.3 52.6M68.3 52.6Q58.6 33.9 67.5 21.5Q82.5 24.0 88.9 44.1M88.9 44.1Q87.0 23.1 100.0 15.0Q113.0 23.1 111.1 44.1M111.1 44.1Q117.5 24.0 132.5 21.5Q141.4 33.9 131.7 52.6M131.7 52.6Q145.2 36.4 160.1 39.9Q163.6 54.8 147.4 68.3M147.4 68.3Q166.1 58.6 178.5 67.5Q176.0 82.5 155.9 88.9'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.55'%3E%3Cpath d='M133.8 90.9L155.0 100.0L133.8 109.1ZM130.3 117.5L138.9 138.9L117.5 130.3ZM109.1 133.8L100.0 155.0L90.9 133.8ZM82.5 130.3L61.1 138.9L69.7 117.5ZM66.2 109.1L45.0 100.0L66.2 90.9ZM69.7 82.5L61.1 61.1L82.5 69.7ZM90.9 66.2L100.0 45.0L109.1 66.2ZM117.5 69.7L138.9 61.1L130.3 82.5Z'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.6'%3E%3Cpath d='M121.2 121.2L78.8 121.2L78.8 78.8L121.2 78.8ZM100.0 130.0L70.0 100.0L100.0 70.0L130.0 100.0Z'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.45'%3E%3Cpath d='M113.0 100.0L198.0 100.0M109.2 109.2L169.3 169.3M100.0 113.0L100.0 198.0M90.8 109.2L30.7 169.3M87.0 100.0L2.0 100.0M90.8 90.8L30.7 30.7M100.0 87.0L100.0 2.0M109.2 90.8L169.3 30.7'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.closing-kolam {
+  left: 0;
+  bottom: 0;
+  width: min(560px, 45vw);
+  height: min(420px, 46%);
+  opacity: var(--closing-kolam-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='1'%3E%3Cpath d='M78.4 78.4L41.6 78.4L41.6 41.6L78.4 41.6ZM60.0 86.0L34.0 60.0L60.0 34.0L86.0 60.0Z'/%3E%3C/g%3E%3Cg fill='%23E3B341'%3E%3Ccircle cx='60' cy='60' r='1.8'/%3E%3Ccircle cx='0' cy='0' r='1.8'/%3E%3Ccircle cx='120' cy='0' r='1.8'/%3E%3Ccircle cx='0' cy='120' r='1.8'/%3E%3Ccircle cx='120' cy='120' r='1.8'/%3E%3Ccircle cx='60' cy='0' r='1.4'/%3E%3Ccircle cx='0' cy='60' r='1.4'/%3E%3Ccircle cx='120' cy='60' r='1.4'/%3E%3Ccircle cx='60' cy='120' r='1.4'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E3B341' stroke-width='0.7'%3E%3Cpath d='M0 0Q30 18 60 0T120 0'/%3E%3Cpath d='M0 120Q30 102 60 120T120 120'/%3E%3Cpath d='M0 0Q18 30 0 60T0 120'/%3E%3Cpath d='M120 0Q102 30 120 60T120 120'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  background-repeat: repeat;
+  /* Cropped into the corner rather than tiled across the panel */
+  -webkit-mask-image: radial-gradient(105% 105% at 0% 100%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(105% 105% at 0% 100%, #000 0%, transparent 72%);
+}
+
+@media (max-width: 991.98px) {
+  .closing-mandala { right: -32%; width: min(560px, 78vw); }
+  .closing-kolam   { width: 62vw; }
+}
+
+/* ══════════════════════════════════════════════
+   KNOWLEDGE LAUNCHER
+   A vertical tab flush to the right edge of the viewport and centred on it,
+   with the label set on its side. It replaces the bottom-right chat-widget
+   circle: at 1480/1520 rails the widest content edge on a 1920 window sits at
+   ~1720px, so a 46px tab on the right margin never overlaps copy, and at
+   z-index 40 it stays under the fixed nav (z-50).
+   ══════════════════════════════════════════════ */
+.quiz-fab-wrap {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  z-index: 40;
+  display: flex;
+  flex-direction: row;      /* bubble to the LEFT of the tab, not above it */
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  /* The -50% is part of the resting transform, so the reveal has to carry it
+     too or the tab jumps half its own height when it appears. */
+  transform: translateY(-50%) translateX(20px) scale(0.94);
+  transform-origin: right center;
+  pointer-events: none;
+  transition: opacity .6s var(--ease-out-soft), transform .6s var(--ease-out-soft);
+}
+.quiz-fab-wrap.is-visible { opacity: 1; transform: translateY(-50%); pointer-events: auto; }
+
+/* ── Launcher ── */
+.quiz-fab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 46px;
+  padding: 20px 0;
+  border-radius: 6px 0 0 6px;
+  background: linear-gradient(200deg, #8F1D25 0%, #6E1420 100%);
+  color: #F5D161;
+  box-shadow: -10px 0 30px -12px rgba(110, 20, 32, 0.55);
+  transition: width .45s var(--ease-out-soft), box-shadow .45s var(--ease-out-soft),
+              background .45s var(--ease-out-soft);
+}
+.quiz-fab-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.quiz-fab-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #FFFDF7;
+  /* Reads bottom-to-top, the convention for an edge tab on the right side. */
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+  .quiz-fab:hover,
+  .quiz-fab:focus-visible {
+    width: 54px;
+    box-shadow: -14px 0 38px -12px rgba(110, 20, 32, 0.7);
+  }
+}
+
+/* Idle attention ring — one slow breath, not a strobe. Drawn on the tab's own
+   rounded rectangle and scaled on x only, so it reads as a pulse off the edge
+   rather than a circle escaping the viewport. */
+.quiz-fab::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px 0 0 6px;
+  border: 1px solid rgba(201, 162, 39, 0.55);
+  border-right: 0;
+  animation: fabRing 3.6s var(--ease-out-soft) infinite;
+  transform-origin: right center;
+  pointer-events: none;
+}
+@keyframes fabRing {
+  0%        { transform: scaleX(1)    scaleY(1);    opacity: 0.7; }
+  70%, 100% { transform: scaleX(1.55) scaleY(1.06); opacity: 0; }
+}
+
+/* ── Greeting bubble ── */
+.quiz-bubble {
+  position: relative;
+  max-width: 236px;
+  padding: 14px 18px;
+  background: #FFFDF7;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  box-shadow: 0 16px 38px -14px rgba(17, 17, 17, 0.26);
+  opacity: 0;
+  transform: translateX(8px) scale(0.96);
+  transform-origin: right center;
+  pointer-events: none;
+  transition: opacity .5s var(--ease-out-soft), transform .5s var(--ease-out-soft);
+}
+.quiz-fab-wrap.is-teasing .quiz-bubble { opacity: 1; transform: none; }
+.quiz-bubble-text {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+/* Tail, a rotated square tucked into the bubble's right edge, pointing at the tab */
+.quiz-bubble-tail {
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  margin-top: -4.5px;
+  width: 9px;
+  height: 9px;
+  background: #FFFDF7;
+  border-right: 1px solid rgba(201, 162, 39, 0.4);
+  border-top: 1px solid rgba(201, 162, 39, 0.4);
+  transform: rotate(45deg);
+}
+
+/* Tablet: the rails are only ~24px clear of the tab, so it slims down. */
+@media (max-width: 991.98px) {
+  .quiz-fab { width: 40px; padding: 16px 0; gap: 10px; }
+  @media (hover: hover) { .quiz-fab:hover, .quiz-fab:focus-visible { width: 46px; } }
+  .quiz-bubble { max-width: 200px; padding: 12px 15px; }
+}
+
+/* Phone: a full vertical label would run most of the screen height, so the tab
+   drops to the flame alone — the 40px hit target is preserved. */
+@media (max-width: 575.98px) {
+  .quiz-fab { width: 40px; padding: 13px 0; gap: 8px; }
+  .quiz-fab-label { display: none; }
+  /* The greeting is the only place the label survives on a phone, and it is
+     decorative — the button's aria-label still carries the real one. */
+  .quiz-bubble { max-width: 168px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-fab::after { animation: none; opacity: 0; }
+}
+
+/* FAQ subject filters — a gold rule grows to mark the active one, replacing
+   the numerals that implied a reading order these facets do not have. */
+.faq-cat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  transition: color .4s var(--ease-out-soft);
+}
+.faq-cat-rule {
+  width: 14px;
+  height: 1px;
+  flex-shrink: 0;
+  background: rgba(17, 17, 17, 0.25);
+  transition: width .5s var(--ease-out-soft), background .5s var(--ease-out-soft);
+}
+.faq-cat:hover .faq-cat-rule { width: 24px; }
+.faq-cat[aria-pressed='true'] .faq-cat-rule { width: 34px; background: var(--ink-gold); }
+
+/* ══════════════════════════════════════════════
+   LAMP LIGHTING — split editorial
+   Copy on the left rail, a portrait plate on cols 8–12, matching the comp and
+   the Our Story block above it. This replaces the centred "manifesto"
+   treatment (narrow centred column + full-bleed horizon band), which put a
+   440px-tall image band and two stacked centred blocks into a section the comp
+   resolves in a single row — the largest single source of dead height on the
+   page after the products fold.
+   ══════════════════════════════════════════════ */
+.ll-copy { align-self: center; }
+.ll-copy .eyebrow { margin-bottom: var(--space-sm); }
+.ll-head { margin-bottom: 22px; }
+.ll-lead { max-width: 470px; margin-bottom: 18px; }
+.ll-note { max-width: 440px; margin-bottom: var(--space-sm); }
+
+/* Portrait plate — the same 4:5 the comp uses, and the same ratio as the Our
+   Story image so the two editorial rows rhyme. */
+.ll-media { aspect-ratio: 4 / 5; }
+
+/* ── The plate is a video (2026-08-12) ──
+   `Images/Lamp Lighting Guide.mp4`, the supplied clip named for this section.
+   It is authored at **550×690 — 4:5.02**, i.e. the frame's own ratio, so it
+   fills the existing plate with no crop and the section's layout is unchanged.
+
+   Which is also why the folded steps stop flattening: a portrait clip inside a
+   16:9 or 4:3 band would be cropped to a letterbox slot through the middle of
+   the frame. It keeps 4:5 all the way down and is capped instead, so it cannot
+   run away with the fold — 360px wide on tablet, 300 on a phone. `<video>` is
+   not `<img>`, so `.img-frame`'s own object-fit rule does not reach it. */
+.ll-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* `.img-frame:hover img` does not apply to a video and is not wanted here — the
+   clip is already motion. */
+
+/* Pause control. The clip autoplays muted and loops, and it runs 10s, so WCAG
+   2.2.2 wants a way to stop it. A single round chip in the plate's corner, in
+   the same gold as the slider arrows and the CTAs, is the smallest thing that
+   satisfies it without putting a browser chrome bar across a portrait plate.
+   Same rim reasoning as `.nv-arrow`: gold on the photography underneath has no
+   dependable boundary, so the deeper gold draws it. */
+.ll-video-toggle {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--ink-gold-text);
+  background: #C9A227;
+  color: #111111;
+  box-shadow: 0 4px 14px -6px rgba(20, 6, 2, 0.6);
+  transition: background .4s var(--ease-out-soft);
+}
+.ll-video-toggle:hover { background: #E3B341; }
+
+@media (max-width: 991.98px) {
+  /* Stacked, the plate would otherwise run the full container width; a 4:5
+     portrait at 732px would be 915px tall. Capped and centred instead. */
+  .ll-media { max-width: 360px; margin-inline: auto; }
+  .ll-lead, .ll-note { max-width: none; }
+}
+
+@media (max-width: 575.98px) {
+  .ll-media { max-width: 300px; }
+}
+
+/* Quiz question count — the entry hook for the knowledge section */
+.quiz-count {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+}
+.quiz-count-num {
+  font-family: var(--font-serif);
+  font-size: clamp(56px, 6vw, 84px);
+  line-height: 0.9;
+  color: var(--ink-maroon);
+}
+.quiz-count-label { display: flex; flex-direction: column; gap: 5px; }
+.quiz-count-label > span { color: var(--ink-gold-text); letter-spacing: 0.14em; }
+
+/* Colour modifiers, so components stop hand-rolling inline colours */
+.t-ink    { color: var(--ink); }
+.t-soft   { color: var(--ink-soft); }
+.t-mute   { color: var(--ink-mute); }
+.t-gold   { color: var(--ink-gold-text); }
+.t-maroon { color: var(--ink-maroon); }
+
+/* Editorial eyebrow label with a hairline gold rule */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-maroon);
+}
+.eyebrow::before {
+  content: '';
+  width: 34px;
+  height: 1px;
+  background: var(--ink-gold);
+  flex-shrink: 0;
+}
+.eyebrow-plain::before { display: none; }
+/* The four-petal kolam star between the hairline and the label (see
+   EyebrowStar.tsx). Draws in `currentColor`, so it takes the eyebrow's maroon.
+   The negative margin pulls the label back off the 14px flex gap — beside a
+   13px glyph the full gap reads as a hole. */
+.eyebrow-star { flex-shrink: 0; margin-right: -4px; }
+
+.serif-italic { font-style: italic; font-family: var(--font-serif); }
+
+/* Oversized index numeral used to mark editorial sections */
+.num-marker {
+  font-family: var(--font-serif);
+  font-size: var(--fs-h1);
+  line-height: 1;
+  color: rgba(201, 162, 39, 0.34);
+  font-weight: 400;
+}
+
+/* ──────────────────────────────────────────────
+   CTA — editorial, not generic web buttons
+
+   One system, and every value in it is shared: 14px Figtree at 600 with 0.1em
+   tracking, a 12px gap to the arrow, the pill corner from `--cta-radius`, and
+   (under `.home-page` / `.closing`) the 44px box from `--cta-h`. Variants
+   differ in colour and horizontal padding only — never in geometry.
+   ────────────────────────────────────────────── */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-body-sm); /* nav/button band: 14–16px */
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  position: relative;
+  /* Pill. `.cta-line` overrides it back to 0 — a bare text link has no box to
+     round, and a 999px radius on a 1px underline would do nothing but confuse
+     the next reader. */
+  border-radius: var(--cta-radius);
+  transition: color .45s var(--ease-out-soft), background-color .45s var(--ease-out-soft),
+              border-color .45s var(--ease-out-soft), transform .45s var(--ease-out-soft);
+}
+.cta .cta-arrow { transition: transform .45s var(--ease-out-soft); flex-shrink: 0; }
+.cta:hover .cta-arrow { transform: translateX(6px); }
+/* The global gold focus ring is a rules-and-ornament colour: #C9A227 measures
+   2.35:1 on ivory, and on the gold CTA itself it would be invisible. Maroon
+   clears both — 8.71:1 on ivory, 3.68:1 against the gold fill. Declared here so
+   `.nav-over-hero :focus-visible` (equal specificity, later in the file) still
+   wins over the banner, where maroon is the one colour that cannot be used. */
+.cta:focus-visible { outline-color: var(--ink-maroon); }
+
+/* Solid — the single strongest action on a view */
+.cta-solid {
+  padding: 19px 34px;
+  background: #8F1D25;
+  color: #FFFDF7;
+}
+.cta-solid:hover { background: #111111; }
+
+/* Outlined — secondary */
+.cta-outline {
+  padding: 18px 33px;
+  border: 1px solid rgba(17, 17, 17, 0.28);
+  color: #111111;
+}
+.cta-outline:hover { border-color: #111111; background: #111111; color: #FFFDF7; }
+
+/* Gold — the primary Dheepam action. It was the commerce/Kaleesuwari variant
+   and is now the homepage's single CTA treatment (2026-08-12 brief): every
+   button on the page is this one, so the page reads as one system rather than
+   four tiers. #111 on #C9A227 measures 7.71:1, and the gold block itself clears
+   3:1 against every surface it sits on — ivory sections, the champagne
+   Neivedhyam band, the maroon closing panel and the scrimmed banner. */
+.cta-gold {
+  padding: 19px 34px;   /* the 34px is what "generous horizontal" means here */
+  background: #C9A227;
+  color: #111111;
+  /* **The rim is not ornament.** The gold fill measures 2.38:1 against ivory,
+     2.21 on the Our Story cream and 1.96 on the Neivedhyam champagne — the label
+     is legible on it (7.81:1) but the *button* has no boundary a 3:1 floor would
+     accept, which the maroon fill it replaces had at 8.63. `--ink-gold-text`
+     (#7D620D) is 5.70:1 on ivory and 4.69 on the champagne while staying inside
+     the gold family, so the pill keeps its edge without picking up a second
+     colour. On the maroon closing band the fill itself is 3.66:1, so the rim is
+     doing nothing there but costing nothing either. Same reasoning, same value,
+     as `.nv-arrow`'s. */
+  border: 1px solid var(--ink-gold-text);
+}
+.cta-gold:hover { background: #E3B341; }
+
+/* Bare text link with an underline that draws in. No box, so no pill. */
+.cta-line {
+  padding-block: 6px;
+  border-radius: 0;
+  color: #111111;
+}
+.cta-line::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 1px;
+  background: #111111;
+  transform: scaleX(1);
+  transform-origin: right;
+  transition: transform .5s var(--ease-out-soft);
+}
+.cta-line:hover::after { transform: scaleX(0); transform-origin: left; }
+
+/* Small — the nav's Contact Us, in the bar and in the mobile sheet. `--cta-h` is
+   scoped to `.home-page` / `.closing` and does not reach the nav, so this states
+   the same 44px itself rather than leaving the box to padding arithmetic that
+   drifts with `line-height` (it did: 44.4 in the bar, 40.9 in the sheet, where
+   the phone rule tightens the leading). 44 is the height every other CTA on the
+   page holds and the floor a touch target may not go under. Horizontal padding
+   goes up as the height comes down, so the button stays wide-shouldered. */
+.cta-sm {
+  min-height: 44px;
+  padding: 0 26px;
+  font-size: var(--fs-body-sm);
+}
+
+/* ── Phones ──
+   `white-space: nowrap` plus 34px of side padding made the longest label —
+   "Explore the Lamp Lighting Guide" — measure 399px inside a 335px content
+   column at 375px wide. `overflow-x: clip` on the document hid the overflow
+   rather than fixing it, so the button was simply cut off. Below sm the label
+   is allowed to wrap and the padding comes in; the arrow is pinned so it can
+   never be orphaned onto a line of its own. */
+@media (max-width: 575.98px) {
+  /* `line-height: 1.35` is the other half of the wrap. At the inherited 1.6 a
+     two-line label sets to 44.8px, which pushed the pill past `--cta-h` to 46.8
+     — the longest homepage label ("Explore the Lamp Lighting Guide") does wrap
+     here. 1.35 sets the same two lines in 37.8, so the box still resolves to a
+     flat 44 and every CTA on the page is the same height at every width.
+     Single-line buttons are unaffected: their height comes from the token. */
+  .cta { white-space: normal; line-height: 1.35; }
+  .cta-solid, .cta-gold { padding: 16px 22px; }
+  .cta-outline { padding: 15px 21px; }
+  /* …but not the small variant, which carries its own 44px `min-height`. The
+     rule above outranks it on source order and would otherwise put 16px of
+     block padding back on the mobile sheet's Contact Us (56.4px). */
+  .cta-sm { padding: 0 22px; }
+  .cta .cta-arrow { flex-shrink: 0; }
+}
+
+/* Magnetic wrapper — JS nudges this element toward the cursor */
+.magnetic { display: inline-block; will-change: transform; }
+
+/* ──────────────────────────────────────────────
+   LINKS & NAV
+   ────────────────────────────────────────────── */
+.nav-link {
+  position: relative;
+  font-family: var(--font-ui);
+  /* 16px by brief — the bar is the one UI surface held above the 14px
+     `--fs-body-sm` the CTAs use, so it reads at arm's length. */
+  font-size: var(--fs-body);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  padding: 10px 2px;
+  transition: color .35s var(--ease-out-soft);
+}
+
+/* The kolam star that used to prefix the hovered and active link is **removed
+   by brief** (2026-08-12) — `.nav-star`, its markup in `Navbar.tsx` and the
+   over-hero colour override all went with it. The drawn-in gold underline is
+   now the whole hover language and the underline plus the maroon label carry
+   the active state, so neither is signalled by colour alone. The bar's geometry
+   is unchanged: the star was absolutely positioned in the inter-link gutter and
+   never occupied flow space. */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 4px;
+  width: 100%; height: 1px;
+  background: #C9A227;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .45s var(--ease-out-soft);
+}
+.nav-link:hover::after, .nav-link[data-active='true']::after { transform: scaleX(1); }
+
+/* The active label is **brand maroon**, so the current page is legible from the
+   colour alone rather than only from the gold hairline under it. `--ink-maroon`
+   measures 8.71:1 on the bar's ivory against `--ink`'s 15.9:1 — a step down in
+   weight, not into low contrast, and it is already the star's colour two pixels
+   to the left, so the active link now reads as one maroon unit.
+
+   Hover is deliberately untouched: it was never a colour change (the gold
+   underline and the kolam star are the whole hover language), and giving it one
+   would leave the active link with nowhere left to go. */
+.nav-link[data-active='true'] { color: var(--ink-maroon); }
+
+/* ── Contact Us, as a CTA ──
+   `.cta.cta-gold.cta-sm` do all the work — this only handles the two things a
+   button in a nav bar needs that a button in a section does not. `flex-shrink`,
+   because the bar is a flex row and `.cta`'s `white-space: nowrap` would
+   otherwise let the label spill; and `--cta-h` is not in play here (that token is
+   scoped to `.home-page` / `.closing`), so the box is padding-driven — 11px of
+   padding against a 22.4px line box lands it at ~44px, which is both the
+   homepage CTA's height and the floor for a touch target inside the 74px phone
+   bar.
+   In the mobile sheet it goes full width and centres, which is the only way a
+   24px-heading stack reads with a button at the foot of it. */
+.nav-cta { flex-shrink: 0; }
+.nav-cta-sheet { display: flex; width: 100%; justify-content: center; }
+
+/* ══ OVER THE BANNER ══
+   The bar has no surface of its own at the top of the homepage — it dissolves
+   into the hero. `.nav-over-hero` is set in `Navbar.tsx` and is true only for
+   home + unscrolled + sheet closed; everything below is scoped to it, so the
+   four inner pages (which open on `PageHero`'s ivory ground) and the scrolled
+   bar are untouched.
+
+   THE SCRIM IS NOT DECORATION — it is what makes light type legal here. The
+   banner behind the bar is not uniformly dark: `cover` anchors the plate
+   bottom-right, so from ~1600px up the tops of the agarbatti cartons and the
+   lamp-oil cap rise into the bar, and the brightest pixel under the link row at
+   1920 measures L 0.936 — ivory reads 1.05:1 on it, gold 1.39:1. Measured off
+   the real plate through the real `.hero-wash` (Pillow, per breakpoint), the
+   bare bar gives ivory only 4.12:1 at 1440 and fails outright at 1600+. With
+   this gradient the worst pixel anywhere under the text rows gives **ivory
+   8.25:1 and gold 5.66:1** at 1920, and no width falls below that. Weakening
+   the alphas re-opens the wide viewports — recompute, don't estimate.
+
+   It reaches zero 96px *below* the bar rather than at its edge, which is the
+   whole point: there is no line anywhere for the eye to read as a boundary.
+   `--nav-cur` is republished by `<nav>`, so the ramp follows the bar down as it
+   shrinks on tablet and phone instead of drifting off it. */
+.nav-scrim {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: calc(var(--nav-cur) + 96px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .6s var(--ease-out-soft);
+  background: linear-gradient(to bottom,
+    rgba(44, 14, 4, 0.86) 0,
+    rgba(44, 14, 4, 0.75) calc(var(--nav-cur) * 0.55),
+    rgba(44, 14, 4, 0.66) var(--nav-cur),
+    rgba(44, 14, 4, 0) 100%);
+}
+.nav-over-hero .nav-scrim { opacity: 1; }
+
+/* Ivory links; the shadow is belt-and-braces over the busiest photography and
+   is not what carries the ratio — the scrim is. */
+.nav-over-hero .nav-link {
+  color: #FFFDF7;
+  text-shadow: 0 1px 10px rgba(20, 6, 2, 0.5);
+}
+/* `--ink-maroon` is the active colour everywhere the bar sits on ivory, and it
+   is unusable here: 1.73:1 on the banner under the links even after the scrim.
+   The banner's own accent gold takes over — 5.66:1 at the worst pixel — and the
+   state is still not carried by colour alone: the drawn-in underline comes with
+   it, exactly as it does on the light bar. */
+.nav-over-hero .nav-link[data-active='true'] { color: #F5D161; }
+/* `--ink-gold` (#C9A227) is a rules-and-ornament colour on ivory and only
+   reaches 2.65:1 on the scrimmed banner, under the 3:1 a non-text indicator
+   needs. The lighter accent gold clears it. Same for the focus ring. */
+.nav-over-hero .nav-link::after { background: #F5D161; }
+.nav-over-hero :focus-visible { outline-color: #F5D161; }
+
+/* The dropdown caret is an affordance, not ornament — 0.45 of ink on ivory is
+   fine, 0.45 of ivory on a photograph is not. */
+.nav-chev { opacity: 0.45; transition: opacity .35s var(--ease-out-soft); }
+.nav-over-hero .nav-chev { opacity: 0.9; }
+
+.nav-burger { color: var(--ink); transition: color .35s var(--ease-out-soft); }
+.nav-over-hero .nav-burger { color: #FFFDF7; }
+
+/* The CTA's label is safe anywhere — it sits on its own fill (#111 on gold is
+   7.71:1). The *block* was the problem when it was maroon: 1.13:1 against the
+   scrimmed cartons at 1920, so it stopped reading as a button. The gold fill
+   clears that on its own (3.36:1 at the same worst pixel), but the hairline
+   ring stays — it is what holds the edge where the banner is brightest, and it
+   costs nothing anywhere else because it is scoped to this state. */
+.nav-over-hero .nav-cta {
+  box-shadow: 0 0 0 1px rgba(255, 253, 247, 0.55), 0 14px 34px -16px rgba(20, 6, 2, 0.9);
+}
+
+.footer-link {
+  font-family: var(--font-ui);
+  font-size: var(--fs-body-sm);
+  color: var(--ink-soft);
+  transition: color .3s var(--ease-out-soft), transform .3s var(--ease-out-soft);
+  display: inline-block;
+}
+.footer-link:hover { color: var(--ink-maroon); transform: translateX(4px); }
+
+/* ──────────────────────────────────────────────
+   ORNAMENT — heritage through restraint
+   ────────────────────────────────────────────── */
+.rule-gold { height: 1px; background: linear-gradient(90deg, #C9A227, rgba(201,162,39,0.08)); }
+.rule-hair { height: 1px; background: rgba(17, 17, 17, 0.1); }
+
+/* Single kolam diamond centred on a hairline */
+.rule-kolam {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #C9A227;
+}
+.rule-kolam::before, .rule-kolam::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(201, 162, 39, 0.32);
+}
+
+/* Traditional section textures — tiled, very low contrast, and always
+   pointer-events:none so they sit strictly behind content. Kept faint enough
+   to read as paper texture rather than ornament. */
+.pattern-kolam,
+.pattern-jali,
+.pattern-petal {
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
+/* Kolam — dot lattice with connecting diagonals */
+.pattern-kolam {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cg fill='none' stroke='%23C9A227' stroke-width='0.8' opacity='0.5'%3E%3Cpath d='M36 12 48 36 36 60 24 36Z'/%3E%3C/g%3E%3Cg fill='%23C9A227' opacity='0.55'%3E%3Ccircle cx='36' cy='36' r='1.6'/%3E%3Ccircle cx='0' cy='0' r='1.6'/%3E%3Ccircle cx='72' cy='0' r='1.6'/%3E%3Ccircle cx='0' cy='72' r='1.6'/%3E%3Ccircle cx='72' cy='72' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 72px 72px;
+  opacity: 0.1;
+}
+
+/* Temple jali — interlocking arch screen */
+.pattern-jali {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%238F1D25' stroke-width='0.9' opacity='0.5'%3E%3Cpath d='M0 40a20 20 0 0 1 40 0 20 20 0 0 0 40 0'/%3E%3Cpath d='M0 80a20 20 0 0 1 40 0 20 20 0 0 0 40 0'/%3E%3Cpath d='M0 0a20 20 0 0 1 40 0 20 20 0 0 0 40 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 0.09;
+}
+
+/* Petal / floral offering scatter */
+.pattern-petal {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='none' stroke='%23C9A227' stroke-width='0.85' opacity='0.6'%3E%3Cpath d='M24 14c6 5 6 13 0 18-6-5-6-13 0-18Z'/%3E%3Cpath d='M72 58c6 5 6 13 0 18-6-5-6-13 0-18Z'/%3E%3Cpath d='M62 20c5 6 13 6 18 0-5-6-13-6-18 0Z'/%3E%3Cpath d='M14 62c5 6 13 6 18 0-5-6-13-6-18 0Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 96px 96px;
+  opacity: 0.13;
+}
+
+.mandala-faint {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='560' viewBox='0 0 560 560'%3E%3Cg fill='none' stroke='%23C9A227' stroke-width='0.7' opacity='0.5'%3E%3Ccircle cx='280' cy='280' r='72'/%3E%3Ccircle cx='280' cy='280' r='128'/%3E%3Ccircle cx='280' cy='280' r='188'/%3E%3Ccircle cx='280' cy='280' r='248'/%3E%3C/g%3E%3Cg fill='%23C9A227' opacity='0.32'%3E%3Ccircle cx='280' cy='32' r='3'/%3E%3Ccircle cx='280' cy='528' r='3'/%3E%3Ccircle cx='32' cy='280' r='3'/%3E%3Ccircle cx='528' cy='280' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* ── Hero art direction ──
+   The campaign banner is a dark amber temple scene, so the hero is the one
+   inverted surface on the site: light type over deep warm ground. Desktop
+   reads left-to-right — copy on the clean amber left, product photography
+   right. Below the editorial breakpoint the same image is re-framed
+   vertically, copy over a deepened top with the products revealed underneath.
+   The rest of the site stays light. */
+/* ── Hero height ──
+   Full screen on desktop. The plate is pre-framed at 1.649:1 — the campaign
+   panorama scaled whole and anchored bottom-right, with the amber ground
+   extended upward to make the headroom. Products occupy the right 56%, the
+   left 44% is open amber for the headline.
+
+   That ratio is chosen so `cover` costs nothing on a normal desktop: any frame
+   wider than 1.649 trims only the invented sky off the top (hence `bottom`),
+   and on the rarer tall window the 92% bias sends the horizontal trim into the
+   empty left gradient rather than the packaging. */
+/* Fixed 720px on desktop, per the brief — not `vh`, so the banner is the same
+   height on a 1440, 1600 or 1920 window and the fold never moves with the
+   browser chrome. The plate is `cover`, so a fixed frame changes only how much
+   invented sky is trimmed off the top, never the products. Tablet and phone
+   step down below; the copy block is ~440px tall at desktop, so 720 centres it
+   with room either side rather than stretching it. */
+.hero-shell { height: 720px; min-height: 720px; }
+
+.hero-media img {
+  object-fit: cover;
+  object-position: 92% bottom;
+}
+
+/* Deepens the left third so the copy clears the bright golden light rays.
+   The re-framed plate is brighter behind the copy than the old crop was, so
+   this holds more density up front but falls away harder — it is spent by the
+   time it reaches the bottles at ~44%. Measured over the plate: h1 9.6:1,
+   lead 6.2:1, micro 4.9:1, with less dimming on the Blossom bottle (0.25)
+   than the shallower ramp it replaces (0.30). */
+.hero-wash {
+  background: linear-gradient(100deg,
+    rgba(44,12,3,0.90) 0%, rgba(48,13,4,0.86) 24%, rgba(54,16,5,0.72) 36%,
+    rgba(64,21,7,0.30) 46%, rgba(74,26,8,0.06) 56%, transparent 64%);
+}
+
+/* On-dark type scope — overrides the light-theme token colours */
+.hero-on-dark .h1 { color: #FFFDF7; }
+.hero-on-dark .hero-accent { color: #F5D161; }
+.hero-on-dark .lead { color: rgba(255, 251, 240, 0.88); }
+/* The banner description dropped from `.lead` (20px) to `.body` (16px) — it
+   needs the same on-dark treatment the lead had. */
+.hero-on-dark .body { color: rgba(255, 251, 240, 0.9); }
+.hero-on-dark .micro { color: rgba(255, 251, 240, 0.7); }
+
+/* Small desktop (992–1199.98): the bar and the type ladder both step down, so
+   the banner does too — 720 here left a visible gap under the markers. */
+@media (max-width: 1199.98px) {
+  .hero-shell { height: 660px; min-height: 660px; }
+}
+
+@media (max-width: 991.98px) {
+  /* Below Bootstrap's lg the panorama is far wider than the column, so the
+     frame goes back to being tall and the image is re-framed vertically: copy
+     over a deepened top, products revealed underneath. The height has to leave
+     ~200px clear beneath the copy or the packaging never appears. */
+  .hero-shell { height: 640px; min-height: 640px; }
+  /* Tablet sees ~51% of the plate's width against a 53%-wide cluster, so it
+     cannot hold quite all of it. 90% keeps every SKU whole — bottles through
+     the Temple pouch and Lavender pack — and spends the shortfall on the
+     lotus and brass lamp, which are props. */
+  .hero-media img { object-position: 90% bottom; }
+  .hero-wash {
+    background: linear-gradient(180deg,
+      rgba(48,14,4,0.9) 40%, rgba(54,17,5,0.8) 54%, rgba(64,22,7,0.5) 66%,
+      rgba(74,26,8,0.14) 80%, transparent 90%);
+  }
+  /* Copy anchors to the top so the products stay visible below it */
+  .hero-frame { align-items: flex-start !important; }
+  /* The banner CTA is gone, so the markers are the last block in the column and
+     the old re-ordering (which existed only to lift them above the buttons)
+     went with it. Tighten the gap instead so the copy clears the packaging. */
+  .hero-copy > .hero-markers { margin-top: 26px !important; }
+}
+
+@media (max-width: 575.98px) {
+  /* A phone window is only ~26% of the plate's width, too narrow for the whole
+     cluster. Bias back to the lamp oils — the hero SKU — rather than landing on
+     the agarbatti packs alone. */
+  .hero-media img { object-position: 62% bottom; }
+  /* The banner has to stay tall enough that the copy block and the bottles are
+     both legible; below this the wash and the packaging start to collide. */
+  .hero-shell { height: 600px; min-height: 600px; }
+}
+
+/* Warm light bloom behind product compositions */
+.glow-warm {
+  background: radial-gradient(ellipse at center, rgba(244, 122, 33, 0.16) 0%, rgba(201, 162, 39, 0.08) 42%, transparent 72%);
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────
+   IMAGE TREATMENT
+   ────────────────────────────────────────────── */
+.img-frame { position: relative; overflow: hidden; background: #F3E9D8; }
+.img-frame img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s var(--ease-out-soft); }
+.img-frame:hover img { transform: scale(1.045); }
+
+/* Warm cinematic wash so photography sits inside the palette */
+.img-warm::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 253, 247, 0.06) 0%, rgba(143, 29, 37, 0.12) 100%);
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────
+   GSAP REVEAL PRIMITIVES
+   Hidden start states are set in JS (see useReveal), never here — an element
+   the scan misses must stay visible rather than vanish.
+   ────────────────────────────────────────────── */
+[data-anim] { will-change: transform, opacity; }
+.line-mask { display: block; overflow: hidden; }
+.line-inner { display: block; will-change: transform; }
+
+/* Accordion */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .6s var(--ease-out-soft);
+}
+.accordion-panel.open { grid-template-rows: 1fr; }
+.accordion-panel > div { overflow: hidden; }
+
+/* ══════════════════════════════════════════════
+   OUR STORY — two-column editorial
+   Copy on the left half, one near-square devotional plate on the right, on the
+   warm cream surface the reference uses. Every value the section needs is a
+   `--story-*` property declared on `.story` itself, so it retunes from here
+   without touching markup.
+   ══════════════════════════════════════════════ */
+.story {
+  /* The one warm-cream surface on the page. The sections either side are ivory
+     (#FFFDF7), so this reads as a deliberate band rather than a drift. */
+  --story-surface: #FBF4E9;
+  /* Display gold for the second headline line. NOT --ink-gold (#C9A227): that
+     measures 2.2:1 on this surface and fails even the 3:1 large-text floor.
+     This computes 3.2:1 at 48px while still reading as antique gold — and it is
+     display-only, so small gold text still uses --ink-gold-text. */
+  --story-gold-display: #A97F1B;
+  --story-card: linear-gradient(96deg, #F9F1E2 0%, #FDF7ED 58%, #F9F1E3 100%);
+  --story-card-edge: rgba(201, 162, 39, 0.18);
+  --story-card-radius: 18px;
+
+  /* Plate cap — the frame is 6 grid columns wide (≈649px at 1440), which the
+     brief wants smaller. Capping it here rather than moving the grid column
+     keeps the plate flush with the container's right rail. */
+  --story-plate-max: 520px;
+
+  background: var(--story-surface);
+  /* Tighter than `.section`'s 64–104. The brief asks the whole section to clear
+     a desktop fold, and the 568px copy column drives the row — so this padding
+     is the only height left to give. 3.8vw lands the section at 678px against a
+     1440×900 viewport and 672 on a 1366×768 laptop, both inside the viewport
+     once the nav has shrunk to `--nav-h-scrolled` (94px with its two hairlines).
+     That is the only state that matters: Our Story starts at y≈720, below the
+     720px hero, so it is never in view with the tall bar. `.story` is declared
+     after `.section`, so it wins on source order at equal specificity — don't
+     move this block above it. */
+  padding-block: clamp(44px, 3.8vw, 68px);
+}
+
+/* Copy column — capped at the reference's measure, which is also what the
+   quote card sits inside. The three gaps below were 26 / 24 / 30 / 32; each
+   lost a few px for the single-fold brief, holding their relative rhythm. */
+.story-copy { max-width: 620px; }
+.story-copy .eyebrow { margin-bottom: 20px; }
+.story-head { margin-bottom: 22px; }
+.story-head-gold { color: var(--story-gold-display); }
+
+/* Shorter than the prose, as in the reference — the rule reads as a mark under
+   the headline, not as a full-width separator. The percentage keeps that
+   proportion (78% of the measure, as in the comp) once the column narrows,
+   instead of the rule going full-width at the middle breakpoints. */
+.story-divider { max-width: min(480px, 78%); margin-bottom: 24px; }
+
+.story-prose { display: flex; flex-direction: column; gap: 18px; }
+
+/* ── Quote card ──
+   Soft cream panel, rounded, a hairline gold rule down the left edge and the
+   existing petal pattern fading in from the right. */
+.story-quote {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: start;
+  margin: 26px 0 0;
+  padding: clamp(22px, 2.2vw, 30px) clamp(24px, 2.4vw, 34px) clamp(20px, 2vw, 26px) clamp(26px, 2.6vw, 36px);
+  border-radius: var(--story-card-radius);
+  background: var(--story-card);
+  box-shadow: inset 0 0 0 1px var(--story-card-edge);
+}
+.story-quote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, rgba(201, 162, 39, 0.2), var(--ink-gold) 26%, var(--ink-gold) 74%, rgba(201, 162, 39, 0.2));
+}
+/* Reuses `.pattern-petal`, masked so it only reads on the right half — a
+   texture behind the attribution, not a motif competing with the quote. */
+.story-quote-petals {
+  -webkit-mask-image: linear-gradient(90deg, transparent 38%, rgba(0, 0, 0, 0.55) 72%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 38%, rgba(0, 0, 0, 0.55) 72%, #000 100%);
+}
+.story-quote-mark {
+  font-family: var(--font-serif);
+  font-size: clamp(38px, 3.6vw, 52px);
+  line-height: 0.72;
+  color: var(--ink-gold);
+  opacity: 0.75;
+  user-select: none;
+}
+/* A px measure, not a `ch` one: this is the width at which the quote breaks
+   after "faith" and keeps "can illuminate generations." whole, the way the
+   reference sets it. */
+.story-quote-text { margin-bottom: 14px; max-width: min(380px, 100%); }
+
+/* Brand Story plate — 14:15 beside the copy (the reference's proportion),
+   flattening once the grid folds and the frame is the full container width.
+   The crop is anchored to the bottom there: the top of the plate is the
+   out-of-focus bokeh band, the bottom is the lamp's pedestal, so taking the
+   trim off the top is what keeps the lamp whole. */
+.story-plate {
+  aspect-ratio: 14 / 15;
+  /* Smaller frame, same ratio — 520×557 at 1440 instead of 649×695. The cap is
+     what shrinks it; the ratio is untouched, and the supplied asset is authored
+     at exactly 520×557, so the frame decodes with zero crop.
+     `margin-inline-start: auto` pulls the narrower frame onto the container's
+     right rail, so the width it gives back falls in the middle gutter rather
+     than orphaning the plate mid-column. Inert in the 992–1199.98 band, where
+     the column is already narrower than the cap. */
+  max-width: var(--story-plate-max);
+  margin-inline-start: auto;
+}
+
+/* 992–1199.98: the row still reads as two columns, but the copy runs ~200px
+   taller than a 14:15 plate in a 446px column, which left the void beside the
+   quote card that this layout exists to close. The plate centres in its column
+   there rather than being stretched — the frame cannot be made taller without
+   cropping the lamp's rim, because the plate is already 14:15 and `cover` would
+   take the difference off the sides. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .story-media { align-self: center; }
+}
+
+@media (max-width: 991.98px) {
+  /* Stacked, the plate **keeps its 14:15 ratio** rather than flattening to 4:3.
+     The flatten dated from when the frame ran the full container width, where a
+     near-square measured ~900px tall on a tablet; the 520px cap already solved
+     that (520×557 is the desktop frame's own size). And the supplied plate can
+     no longer afford a crop: the oil bottle spans 78% of the frame height, so a
+     4:3 window clips its cap at every `object-position` that keeps the base —
+     checked as rendered crops, not by eye. So the ratio holds everywhere and
+     `object-position` has nothing left to do. Costs the tablet steps ~167px of
+     image height, which buys the product being whole. */
+  .story-plate { max-width: min(520px, 100%); margin-inline: auto; }
+  /* The column is the full container now, so only the prose keeps a measure —
+     at 768px the paragraphs would otherwise set to ~79 characters a line. The
+     card and the plate stay full width. */
+  .story-copy { max-width: none; }
+  .story-prose { max-width: 640px; }
+}
+
+@media (max-width: 575.98px) {
+  /* The glyph moves above the quote instead of beside it: in a 280px card it
+     was taking a third of the measure with the padding and dropping the quote
+     to four lines. */
+  .story-quote { grid-template-columns: 1fr; gap: 4px; }
+  .story-quote-mark { line-height: 0.9; }
+}
+
+/* ══════════════════════════════════════════════
+   FESTIVAL CARDS
+   Summary tiles on the homepage — one photograph, a period, a name and a
+   paragraph. No per-card CTA: the section carries one for all three.
+   ══════════════════════════════════════════════ */
+.fest-card-media { aspect-ratio: 4 / 3; margin-bottom: 18px; }
+.fest-card:hover .fest-card-media img { transform: scale(1.04); }
+.fest-card-period { display: block; margin-bottom: 8px; }
+.fest-card-name { margin-bottom: 10px; }
+.fest-card .body-sm { max-width: 46ch; }
+
+/* Below md the three cards can no longer sit side by side, and stacking them
+   as full-width tiles ran the section to 1920px at 576. They turn on their side
+   instead — plate left, copy right — which holds all three in ~550px. */
+@media (max-width: 767.98px) {
+  .fest-card {
+    display: grid;
+    grid-template-columns: minmax(120px, 34%) 1fr;
+    gap: clamp(14px, 3.4vw, 22px);
+    align-items: center;
+  }
+  .fest-card-media { aspect-ratio: 4 / 3; margin-bottom: 0; }
+  .fest-card-period { grid-column: 2; margin-bottom: 6px; }
+  .fest-card-name   { grid-column: 2; margin-bottom: 8px; }
+  .fest-card .body-sm { grid-column: 2; }
+  /* The plate spans all three text rows in the second column. */
+  .fest-card-media { grid-row: 1 / 4; }
+}
+
+/* ══════════════════════════════════════════════
+   NEIVEDHYAM SLIDER
+   A pixel-positioned track so a live drag offset can be added to it, with
+   one offering per slide. Restrained motion: the track eases, the incoming
+   copy rises, nothing else moves.
+   ══════════════════════════════════════════════ */
+/* The control row's own two measurements, published here because both the row
+   *and* the copy column above it have to agree on them — see the reservation
+   under `.nv-copy`. `--nv-row-h` is the arrows' 54px box, the tallest member of
+   the row (the CTA is 52 even with a wrapped label). */
+.nv-slider {
+  /* The arrows' box — still the tallest member of the row (the CTA is 44 even
+     with a wrapped label), so it is what the copy column reserves against. */
+  --nv-row-h: 48px;
+  --nv-row-gap: clamp(24px, 2.8vw, 34px);
+}
+.nv-slider:focus-visible { outline: 2px solid var(--ink-gold); outline-offset: 12px; }
+
+.nv-viewport {
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;           /* page keeps vertical scroll, we take the x axis */
+  -webkit-user-select: none;
+  user-select: none;
+}
+.nv-viewport:active { cursor: grabbing; }
+
+.nv-track { display: flex; will-change: transform; }
+.nv-slide { flex: 0 0 100%; min-width: 0; }
+
+/* `align-items: start`, not `center` (2026-08-12 brief): the plate's top edge and
+   the copy column's top edge are the same line, which is the alignment Our Story
+   already uses. Centring put the copy 132px below the plate's top at 1440 and,
+   in the 992–1199.98 band where the copy is the taller item, put clear space
+   *above* the plate. Neither column carries any top margin — the row top is the
+   only thing either of them is aligned to. */
+.nv-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(32px, 5vw, 76px);
+  align-items: start;
+}
+
+.nv-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;   /* more cinematic than the old 5:4 */
+  background: #F8F0E3;
+}
+
+/* Supporting detail sits between the description and the CTA, separated by a
+   hairline so it reads as metadata rather than more prose. */
+.nv-note {
+  padding-top: 16px;
+  margin-bottom: 0;   /* the CTA below it owns the gap — see `.nv-cta` */
+  border-top: 1px solid rgba(17, 17, 17, 0.14);
+  max-width: 440px;
+  color: var(--ink-soft);
+}
+.nv-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.4s var(--ease-out-soft);
+}
+.nv-slider:hover .nv-slide[aria-hidden='false'] .nv-media img { transform: scale(1.03); }
+
+/* The control row **repeats `.nv-grid`'s track definition** rather than being a
+   plain flex row, so a group placed in one of its columns lands on exactly the
+   rail that column has inside a slide, at every width, and stays there if the
+   slide grid is ever retuned. The group sits in **column 2 — the copy column**,
+   so the CTA reads as the end of the description block and the row terminates on
+   the container's content rail, directly under the copy above it. (It used to
+   sit in column 1, closing on the image's right edge.) */
+.nv-controls {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(32px, 5vw, 76px);
+  margin-top: var(--nv-row-gap);
+  /* **Load-bearing, and the fix for arrows that did not respond to a real
+     click** (2026-08-12). At ≥992px the row is pulled up by `--nv-row-h` so its
+     bottom lands on the plate's baseline, which puts it *inside* `.nv-viewport`'s
+     box — and `.nv-track` carries `will-change: transform`, which makes it a
+     stacking context. A stacking context paints above every non-positioned
+     in-flow sibling regardless of tree order, so the track sat on top of the
+     row: `elementFromPoint` at the next arrow's own centre returned `.nv-grid`.
+     Only two members of the row escaped it by accident — the CTA, because
+     `.cta` is `position: relative`, and the *disabled* arrow, because
+     `opacity: 0.4` gives it a stacking context of its own (which is why prev
+     appeared to work and next never did). Positioning the row puts all of it in
+     the same paint phase, later in tree order, so the whole row wins.
+     `.click()` never caught this — it bypasses hit-testing entirely. */
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Where the control row can and cannot sit ──
+   The row cannot live *inside* a slide (there is one row for five slides, and it
+   must not travel with the track), so it renders below the viewport — and the
+   viewport is as tall as the plate. **That fixes its floor: the row's top can
+   never rise above the plate's bottom edge minus its own height.** Pull it any
+   further and `.nv-slider` computes shorter than the viewport inside it, so the
+   plate spills past the section's content box and `.section { overflow: hidden }`
+   clips it. So with the columns top-aligned and the plate the taller of the two,
+   the trailing space in the copy column is structural, not a spacing mistake —
+   the row closes the column on the plate's baseline and the CTA reads as the
+   slider's own footer rather than the last line of the description.
+
+   The reservation below is what keeps that exact: the copy column reserves the
+   row's height plus its gap, and the row is pulled back up by exactly the height
+   it reserved, so the row's bottom lands **on the plate's bottom edge**. It is
+   also the safety in the other direction — in the 992–1199.98 band the reserved
+   copy box is the *taller* grid item, so it defines the row, the plate gets
+   trailing space instead, and the note-to-CTA gap collapses to exactly
+   `--nv-row-gap`. The row can never ride up into the note at any width.
+
+   `align-self: start` (2026-08-12) is the brief's top alignment; it was `end`,
+   which is what centred the copy against the plate. It changes no height: the row
+   height is still max(plate, copy + reservation), so the section measures the
+   same at every width — the space that sat above the copy now sits below the note.
+
+   Folded (≤991.98) none of this applies: the copy is under the plate, there is
+   no trailing space, and the reservation is switched off below. */
+@media (min-width: 992px) {
+  .nv-copy {
+    align-self: start;
+    padding-bottom: calc(var(--nv-row-h) + var(--nv-row-gap));
+  }
+  .nv-controls { margin-top: calc(-1 * var(--nv-row-h)); }
+}
+/* CTA, counter, arrows — one row spanning the copy column, **split: the CTA on
+   the column's left rail, the counter and arrows on the container's content
+   rail** (2026-08-12 brief: "align the Neivedhyam CTA with the left edge of the
+   paragraph container"). `space-between` plus `.nv-controls-nav`'s
+   `margin-left: auto` is what does it — both are needed, and neither alone
+   survives the wrapped phone row.
+
+   The alignment is *exact* only because the CTA reverted to `variant="line"` in
+   the same brief: a bare label has no horizontal padding, so its own left edge
+   is its first glyph's left edge and lands on `.nv-copy`'s rail at 0.00. A
+   filled pill would put 34px of padding between the rail and the label.
+
+   **`nowrap` is load-bearing.** Flexbox breaks lines *before* it shrinks items,
+   so with `wrap` on, the narrow desktop band puts the counter and arrows on a
+   second row instead of narrowing the CTA. `nowrap` forces the squeeze onto the
+   CTA, which absorbs it by taking a second line of label inside its existing
+   box (see `.nv-cta`). Wrapping is switched back on below sm, where the row
+   genuinely cannot hold both.
+
+   Column 2 is the narrower track (1fr against the media's 1.15fr), so the squeeze
+   starts high: the column offers 586 at 1440 and 488 at 1200. From ~1270 down the
+   label takes its second line — which is why the 992–1199.98 band tightens the
+   gap below, to keep that a *two*-line wrap rather than a three-line one. */
+.nv-controls-group {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: clamp(18px, 2vw, 28px);
+}
+/* 992–1199.98: the narrowest the copy column gets while still being a column —
+   402px at 992. **The stacked row that lived here is gone** (2026-08-12): it
+   existed only because a *pill* spends 68px on horizontal padding before the
+   counter and arrows take their 184, which left the label ~114px against the 190
+   its longest line needs, so it set to three lines and grew past 44px. Reverting
+   the CTA to `variant="line"` gives that 68px straight back, so the row holds one
+   line again with nothing but a tighter gap — and `--nv-row-h` stays the arrows'
+   48px at every desktop width, so the copy column's reservation and the row's own
+   pull need no per-band value. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .nv-controls-group { gap: 16px; }
+  .nv-controls-nav   { gap: 16px; }
+}
+/* The counter and the arrows are a pair and must never be split across a
+   wrapped line — only the CTA is allowed to give. `margin-left: auto` is what
+   holds them on the content rail once the group went back to `space-between`:
+   with a wrapped row (below sm) `space-between` alone leaves the second line
+   packed left, and the auto margin is what still pushes it to the rail. */
+.nv-controls-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2vw, 28px);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.nv-arrows { display: flex; gap: 10px; flex-shrink: 0; }
+/* **Round gold chips, in the CTA's own colour** (2026-08-12 brief) — so the
+   three members of the control row read as one family: gold pill, gold pill,
+   gold pill. 48px rather than the old 54 keeps them balanced against the CTA
+   now that it is 44 tall, and it is the tallest member of the row, which is
+   what `--nv-row-h` publishes.
+
+   The rim is not ornament. #C9A227 measures **1.95:1** on the section's own
+   champagne `#F4E6C8`, so a bare gold chip would have no readable boundary at
+   all — under the 3:1 a UI control's edge needs. `--ink-gold-text` (#7D620D)
+   is 4.74:1 on the band and stays inside the gold family, which is why it is
+   the rim rather than the maroon the old ivory chip used. The glyph is ink on
+   gold, 7.71:1. Hover lifts to the warm gold; the rim holds through it. */
+.nv-arrow {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--ink-gold-text);
+  color: #111111;
+  background: #C9A227;
+  box-shadow: 0 2px 10px -6px rgba(74, 16, 8, 0.45);
+  transition: background .4s var(--ease-out-soft), color .4s var(--ease-out-soft),
+              border-color .4s var(--ease-out-soft), opacity .4s var(--ease-out-soft);
+}
+.nv-arrow:hover:not(:disabled) { background: #E3B341; border-color: var(--ink-gold-text); }
+.nv-arrow:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+/* Pagination dots removed by brief — the counter carries position now, and the
+   arrows carry movement. */
+.nv-count { flex-shrink: 0; white-space: nowrap; }
+
+@media (max-width: 991.98px) {
+  .nv-grid { grid-template-columns: 1fr; gap: 24px; }
+  .nv-media { aspect-ratio: 3 / 2; }
+  /* Folded, image and copy are one full-width column, so the control row folds
+     with them and the group still ends on the same rail. **It has to be moved
+     back to column 1 explicitly** — left in column 2 it would create an implicit
+     second track and sit off the rail. */
+  .nv-controls { grid-template-columns: 1fr; gap: 18px; }
+  .nv-controls-group { grid-column: 1; }
+}
+
+/* ══════════════════════════════════════════════
+   HOME PAGE
+   Scoped to `.home-page` — the wrapper App.tsx puts around the homepage
+   fragment — so none of this reaches the inner pages, which are outside this
+   brief. `.closing` is named alongside it wherever a rule has to reach the
+   closing block, which Footer.tsx owns and renders below every page.
+   ══════════════════════════════════════════════ */
+
+/* ── Headline masks: descenders were being clipped ──
+   `.line-mask` is `overflow: hidden` and its height is the line box, but the
+   heading line-heights (H1 1.05, H2 1.15) are *tighter* than Fraunces' own
+   ascent + descent, which measures 1.234em. At 1440 the hero's H1 line box is
+   67.2px against a 79px font box, so the mask cut 5.9px off every descender —
+   the y in "Let Every Breath", "Purity", "Daily Devotion", the g in "Ready to
+   bring". H2 lost 1.9px the same way.
+
+   The padding gives the mask room; the equal negative margin gives the height
+   straight back, so the vertical rhythm is unchanged to the pixel. 0.16em is
+   sized off the deepest case with room to spare — H1 needs 0.092em, H2 0.04em,
+   and 0.12em left the 44px mobile H1 only 0.9px of clearance. The reveal is
+   untouched and still hides completely: `yPercent: 108` moves the line 1.134em
+   down against a 1.21em clip box, and the 0.076em sliver that does fall inside
+   the padding band is above the cap line (ink starts 0.142em in) — empty space,
+   never ink. Verified by driving the hook's own tween by hand, per CLAUDE.md §7.6. */
+.home-page .line-mask,
+.closing .line-mask {
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
+
+/* ── CTA band — 44px tall, 14px, full caps, pill ──
+   `.cta` already sets `--fs-body-sm` (14px), the pill corner and
+   `text-transform: uppercase`, so only the box needed work: padding-block goes
+   to zero and the height comes from the token, which makes every variant the
+   same target. The height came down from 52 to 44 with the 2026-08-12 brief —
+   out of the vertical padding only, never out of the label.
+
+   `min-height`, not `height`: below sm the longest labels are allowed to wrap
+   (see the phone rule in the CTA block above), and a hard height would clip the
+   second line instead of growing past it.
+
+   Two homepage CTAs came *back* to `.cta-line` on 2026-08-12 (Shop Now on both
+   product tiles, and the Neivedhyam control-row CTA), which is why the
+   `.home-page .cta-line::after` re-pin is back too — it lives beside `.nv-cta`
+   further down, with the other Neivedhyam rules. */
+.home-page .cta,
+.closing .cta {
+  min-height: var(--cta-h);
+  padding-block: 0;
+}
+
+/* ── The gold pill: no rim, a soft lift, and a shine that crosses on hover ──
+   (2026-08-12 brief.) Scoped to the homepage, its closing band and the nav's
+   Contact Us — `.cta-gold` itself is untouched, so the three inner-page gold
+   buttons keep the rim and the geometry documented for them.
+
+   **The rim goes to `transparent` rather than being deleted.** `.cta-gold` is
+   `border: 1px`, and the box is `min-height`-driven with 34px of horizontal
+   padding; dropping the declaration would change the padding box by 2px in each
+   axis and re-open the 44px height promise. Transparent costs nothing and keeps
+   every measured number identical.
+
+   **What replaces it as the button's boundary.** #C9A227 is only 2.38:1 against
+   ivory (2.21 on the Our Story cream, 1.96 on the Neivedhyam champagne), so the
+   #7D620D rim was what gave the *block* an edge a 3:1 floor accepts — the label
+   was never the problem (7.81:1). A shadow is not a 3:1 boundary, so this is a
+   deliberate trade the brief asked for: the pill now reads as a raised object
+   rather than an outlined one. It is not the only cue — every gold CTA on the
+   page carries an arrow glyph and an uppercase label, the closing band's pill
+   sits on maroon where the fill itself is 3.66:1, and the nav's keeps its ivory
+   ring over the banner (`.nav-over-hero .nav-cta`, declared earlier and left
+   alone here so that state is unaffected). If it needs to come back, the value
+   is #7D620D and the reasoning is in `CLAUDE.md` §4. */
+.home-page .cta-gold,
+.closing .cta-gold,
+.nav-cta {
+  border-color: transparent;
+  /* What clips the shine to the pill. `::before` does not inherit the radius —
+     it is the parent's `overflow` that cuts the highlight to the 999px corner,
+     so this cannot be dropped. Box-shadows are painted outside the overflow box
+     and are unaffected, which is why the nav's over-hero ivory ring survives. */
+  overflow: hidden;
+}
+/* The lift, homepage sections only — `.closing .closing-cta` already carries its
+   own deeper drop for the dark band, and the nav's is state-dependent. */
+.home-page .cta-gold {
+  box-shadow: 0 1px 2px rgba(74, 16, 8, 0.12), 0 10px 24px -14px rgba(74, 16, 8, 0.55);
+}
+
+/* A single narrow highlight, left → right, once per hover. Deliberately quiet:
+   42% of the box wide, ivory at 0.42 in the middle and zero at both ends, skewed
+   so the leading edge rakes rather than sweeping as a flat bar. `::before` is
+   the only positioned child, so it paints over the label — which is what a
+   reflection does — and `pointer-events: none` keeps it out of hit-testing.
+   `.cta` is already `position: relative`, so nothing else is needed.
+
+   It runs on `:focus-visible` too, so a keyboard user gets the same affordance
+   as a mouse user. Reduced motion switches the pseudo-element off entirely at
+   the foot of the file rather than relying on the global duration clamp. */
+@keyframes cta-shine {
+  from { transform: translateX(-150%) skewX(-18deg); }
+  to   { transform: translateX(260%)  skewX(-18deg); }
+}
+.home-page .cta-gold::before,
+.closing .cta-gold::before,
+.nav-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 42%;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgba(255, 253, 247, 0) 0%,
+    rgba(255, 253, 247, 0.42) 50%,
+    rgba(255, 253, 247, 0) 100%);
+  transform: translateX(-150%) skewX(-18deg);
+}
+.home-page .cta-gold:hover::before,
+.home-page .cta-gold:focus-visible::before,
+.closing .cta-gold:hover::before,
+.closing .cta-gold:focus-visible::before,
+.nav-cta:hover::before,
+.nav-cta:focus-visible::before {
+  animation: cta-shine 0.85s var(--ease-out-soft) 1;
+}
+
+/* ── Body copy is one size on the homepage: 16px ──
+   (2026-08-12 brief.) Every paragraph and description on the page resolves to
+   `--fs-body` — `.body` already did; `.lead` (20/18) and `.body-sm` (14) are the
+   two that deviated, and they are pulled to the same step here rather than at
+   the token, so the inner pages keep the three-tier prose ladder they were built
+   on. Line-height is left at each class's own value: `.lead`'s 1.5 at 16px is a
+   tighter measure than `.body`'s 1.6 and reads as the same paragraph, and
+   touching it would change every section's height for nothing.
+
+   Not included: `.micro` (12px — captions and metadata, the `--fs-caption` tier,
+   not prose) and `.closing .lead`, which `Footer.tsx` renders under all five
+   routes and is therefore out of a homepage-only brief. */
+.home-page .lead,
+.home-page .body-lg,
+.home-page .body-sm { font-size: var(--fs-body); }
+
+/* ── Image corners ──
+   Two steps by brief, both scoped to the homepage so the inner pages are not
+   touched. 16px on the feature plates, 8px on the festival cards — the smallest
+   media on the page, and side-by-side thumbs of ~120px below md. Every frame
+   here is already `overflow: hidden`, so the radius clips the photograph and
+   its hover scale with it; nothing needed a second radius on the `img`.
+
+   **The hero banner is deliberately excluded.** It is full-bleed and the header
+   dissolves into it — a rounded corner would put back the boundary the blend
+   exists to remove. The closing section's photograph is excluded too: it is
+   clipped to an SVG lotus bloom, which has no corners to round. */
+.home-page .img-frame,
+.home-page .tile-plinth,
+.home-page .nv-media { border-radius: var(--img-radius); }
+.home-page .fest-card-media { border-radius: var(--img-radius-sm); }
+
+/* ── Inter-section kolam rule ──
+   `.rule-kolam` supplies the hairlines and the gold; this only caps and centres
+   it, and softens both ends so the motif is the focus rather than the line. It
+   sits in the gap the two sections' own padding already makes, so it costs the
+   page nothing but its own 18px. */
+.rule-temple {
+  max-width: min(620px, 68%);
+  margin-inline: auto;
+  justify-content: center;
+}
+.rule-temple::before { background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.42)); }
+.rule-temple::after  { background: linear-gradient(90deg, rgba(201, 162, 39, 0.42), transparent); }
+.rule-temple svg { flex-shrink: 0; width: clamp(112px, 12vw, 148px); height: auto; }
+@media (max-width: 575.98px) {
+  .rule-temple { max-width: 86%; }
+}
+
+/* ── The Neivedhyam CTA ──
+   **Back to `variant="line"`** (2026-08-12 brief) after one session as a gold
+   pill. It sits first in `.nv-controls-group`, on the copy column's left rail,
+   so the group's own `gap` owns the spacing around it — and because a bare label
+   carries no horizontal padding, its first glyph *is* the rail.
+
+   `white-space: normal` is the one thing it needs. `.cta` sets `nowrap`, and the
+   group does not fit the narrowest desktop band on one line — with nowrap the
+   counter and arrows would be pushed onto a second row instead. Letting *this*
+   label take a second line keeps all three together; `line-height: 1.35` sets
+   those two 14px lines in 37.8px so the box still resolves to `--cta-h`'s 44 and
+   the row height never changes. `text-align: left` (not the pill's `center`)
+   because the whole point of the box now is where its left edge lands. */
+.nv-cta { white-space: normal; text-align: left; line-height: 1.35; }
+
+/* The underline is pinned to the label, not to the box. `.home-page .cta` gives
+   every CTA a 44px `min-height` as a touch target, and `.cta-line::after` sits
+   at `bottom: 0` — so on the homepage it would draw 44px down the box instead of
+   under the words. `calc(50% - 0.8em - 6px)` measures down from the label's own
+   centre and lands 12.1px under the baseline at any box height. Restored with
+   its consumers (Shop Now and the Neivedhyam CTA both reverted to `.cta-line`);
+   the rule was deleted in the pill consolidation when the page had none left. */
+.home-page .cta-line::after { bottom: calc(50% - 0.8em - 6px); }
+
+@media (max-width: 575.98px) {
+  /* Below sm even a two-line label cannot sit beside the counter and arrows in a
+     280–335px column — the label's own longest word plus its arrow needs ~150px
+     of the ~100px that would be left. So wrapping comes back on here and the CTA
+     takes the whole first line, with the counter and arrows on the line beneath.
+     The CTA stays left on the copy's rail and the pair still closes on the
+     content rail (`.nv-controls-nav`'s auto margin) — the stacked form of the
+     split desktop row. */
+  .nv-controls-group { flex-wrap: wrap; row-gap: 18px; }
+  .nv-cta { flex: 1 0 100%; justify-content: flex-start; text-align: left; }
+}
+
+/* Form fields */
+.field {
+  width: 100%;
+  padding: 16px 2px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.18);
+  outline: none;
+  transition: border-color .4s var(--ease-out-soft);
+}
+.field:focus { border-bottom-color: #C9A227; }
+.field::placeholder { color: rgba(17, 17, 17, 0.3); }
+select.field { appearance: none; cursor: pointer; }
+
+/* Focus visibility for keyboard users */
+:focus-visible { outline: 2px solid #C9A227; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  [data-anim] { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+  [data-anim='line'] .line-inner { transform: none !important; }
+  /* The CTA shine is switched off at the element, not just clamped by the
+     duration rule above. With `animation-duration: 0.001ms` the highlight would
+     still be composited for a frame; `display: none` means it never exists. */
+  .home-page .cta-gold::before,
+  .closing .cta-gold::before,
+  .nav-cta::before { display: none !important; }
+}

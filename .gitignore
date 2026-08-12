@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Caches
+.cache/
+.vite/
+.turbo/
+*.tsbuildinfo
+vite.config.*.timestamp-*
+
+# Secrets and local environment.
+# `.env*` covers .env, .env.local, .env.production and every other variant.
+# The negation keeps a committed template legal if one is ever added.
+.env*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# Logs
+logs/
+*.log
+*-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Deployment
+.vercel
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.idea/
+*.swp
+
+# Scratch
+.claude-replay.*
+.tmp-*
+
+# Claude Code: launch.json is shared team config and IS committed;
+# settings.local.json is per-machine (personal permission allowlist).
+.claude/settings.local.json
+
+# Contact sheets written by the tools/*.py asset scripts. They are regenerable
+# (re-run the script) and each is 1–2MB, so they stay out of the repo — but the
+# scripts themselves are committed, see README.md § Assets.
+tools/*-preview.png
+
+# Python bytecode from the tools/ asset builders
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Alternate lockfiles. The project standardises on npm + package-lock.json;
+# a second lockfile makes Vercel's package-manager detection ambiguous.
+pnpm-lock.yaml
+yarn.lock
+bun.lockb

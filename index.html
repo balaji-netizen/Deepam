@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="<!-- figma:lang -->">
+  <head>
+    <!-- figma:head-start -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><!-- figma:title --></title>
+
+    <!-- Fonts: preconnect + a direct stylesheet link rather than an @import
+         inside index.css, which would chain three round trips before first
+         paint. `display=swap` keeps text visible during load. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=Figtree:wght@400;500;600&display=swap"
+    />
+
+    <!-- Editorial photography is served from Unsplash; warming the socket here
+         removes DNS + TLS from the critical path of the first in-view image. -->
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <!-- figma:head-end -->
+  </head>
+  <body>
+    <!-- figma:body-start -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- figma:body-end -->
+  </body>
+</html>

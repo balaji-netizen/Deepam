@@ -1,0 +1,15 @@
+{
+  "title": "Dheepam — Pure Lamp Oil & Agarbatti for Daily Devotion",
+  "description": "Dheepam by Kaleesuwari Refinery — pure lamp oils and agarbatti for the daily lamp. Lamp-lighting guidance, festival customs and neivedhyam traditions.",
+  "language": "en",
+  "robots": {
+    "index": true
+  },
+  "icons": {
+    "icon": "/favicon.png"
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

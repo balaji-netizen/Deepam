@@ -1,0 +1,42 @@
+# Line endings and binary handling.
+#
+# THIS FILE DELIBERATELY DOES NOT USE GIT LFS.
+#
+# The Figma Make scaffold shipped a generated .gitattributes that routed every
+# *.png / *.webp / *.mp4 / *.woff2 through `filter=lfs`. That is a hard
+# deployment blocker on Vercel: Vercel clones the repo WITHOUT fetching LFS
+# objects, so the build would see ~130-byte pointer files where the plates and
+# the Lamp Lighting video should be. Vite would happily hash and emit those
+# pointers as "images", and every photograph on the deployed site would be
+# broken — with a green build log.
+#
+# The shipped assets total ~3.2MB (see src/imports/), which plain Git carries
+# without complaint. Do not reintroduce LFS filters here unless Vercel's LFS
+# checkout is configured first.
+
+# Normalise text files to LF in the repo, checkout native on Windows.
+* text=auto
+
+# Anything Git might otherwise line-ending-mangle or try to diff. `binary` is
+# shorthand for `-diff -merge -text`.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.webp   binary
+*.avif   binary
+*.svg    text eol=lf
+*.mp4    binary
+*.webm   binary
+*.mov    binary
+*.mp3    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.otf    binary
+*.pdf    binary
+*.zip    binary
+
+# Keep shell scripts LF so the Figma Make helpers in .figma/make stay runnable.
+*.sh     text eol=lf
