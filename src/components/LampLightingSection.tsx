@@ -81,7 +81,7 @@ export default function LampLightingSection({ setPage }: LampLightingSectionProp
                   same 14px Figtree label — `Button02` only adds `.btn-02`,
                   which swaps the once-per-hover highlight for the ambient
                   left→right reflection. Still no `magnetic`. */}
-              <Button02 onClick={() => setPage('lamp-lighting')}>
+              <Button02 onClick={() => setPage('home')}>
                 Explore the Lamp Lighting Guide
               </Button02>
             </div>

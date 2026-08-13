@@ -76,7 +76,7 @@ export default function FestivalsSection({ setPage }: FestivalsSectionProps) {
             <div data-anim="fade" data-delay="0.2" style={{ marginTop: 'var(--space-sm)' }}>
               {/* The shiny CTA (2026-08-13) — `Button02` is the gold pill with
                   the ambient left→right reflection; nothing else changed. */}
-              <Button02 onClick={() => setPage('festival-customs')}>
+              <Button02 onClick={() => setPage('home')}>
                 Explore Festival Customs
               </Button02>
             </div>

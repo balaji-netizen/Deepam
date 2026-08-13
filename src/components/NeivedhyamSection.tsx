@@ -299,8 +299,8 @@ export default function NeivedhyamSection({ setPage, scrollToSection }: Neivedhy
             <div className="nv-controls-group">
               <Button
                 onClick={() => {
-                  setPage('festival-customs')
-                  setTimeout(() => scrollToSection('neivedhyam-dishes'), 260)
+                  setPage('home')
+                  setTimeout(() => scrollToSection('neivedhyam'), 260)
                 }}
                 /* Back to `line` (2026-08-12 brief: revert this CTA to its
                    previous style) after one session as a gold pill. A bare

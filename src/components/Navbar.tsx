@@ -69,9 +69,13 @@ export default function Navbar({ currentPage, setPage, scrollToSection }: Navbar
   const handleNav = (link: (typeof navLinks)[number]) => {
     setMobileOpen(false)
     setActiveDropdown(null)
-    if ('action' in link && link.action) {
-      setPage(link.action as Page)
-    } else if ('section' in link && link.section) {
+
+    if ('action' in link && link.action === 'home') {
+      setPage('home')
+      return
+    }
+
+    if ('section' in link && link.section) {
       if (currentPage !== 'home') setPage('home')
       setTimeout(() => scrollToSection(link.section as string), 120)
     }
@@ -80,12 +84,13 @@ export default function Navbar({ currentPage, setPage, scrollToSection }: Navbar
   const handleDropdownItem = (item: { label: string; section?: string; page?: Page; anchor?: string }) => {
     setActiveDropdown(null)
     setMobileOpen(false)
-    if (item.page) {
-      setPage(item.page)
-      /* Deep link into a block on the destination page. `setPage` scrolls to
-         top first, so this has to wait for the new page to mount. */
-      if (item.anchor) setTimeout(() => scrollToSection(item.anchor as string), 260)
-    } else if (item.section) {
+
+    if (item.page === 'home') {
+      setPage('home')
+      return
+    }
+
+    if (item.section) {
       if (currentPage !== 'home') setPage('home')
       setTimeout(() => scrollToSection(item.section as string), 120)
     }

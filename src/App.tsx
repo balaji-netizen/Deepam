@@ -94,7 +94,7 @@ export default function App() {
           a homepage treatment and `.closing` renders under every route. */}
       <Footer setPage={setPage} scrollToSection={scrollToSection} currentPage={currentPage} />
       {/* Hidden on its own page — nothing to route to from there */}
-      {currentPage !== 'knowledge' && <StickyCTA onOpen={() => setPage('knowledge')} />}
+      {currentPage !== 'knowledge' && <StickyCTA onOpen={() => setPage('home')} />}
     </div>
   )
 }
