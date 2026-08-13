@@ -48,7 +48,7 @@ export default function StickyCTA({ onOpen }: StickyCTAProps) {
         <span className="quiz-bubble-tail" />
       </div>
 
-      <button className="quiz-fab" onClick={onOpen} aria-label="Test your devotional knowledge">
+      <button className="quiz-fab" onClick={onOpen} aria-label="Devotion Quiz">
         <span className="quiz-fab-icon" aria-hidden="true">
           {/* Dheepam flame */}
           <svg width="18" height="22" viewBox="0 0 22 26" fill="none">
@@ -65,7 +65,7 @@ export default function StickyCTA({ onOpen }: StickyCTAProps) {
 
         {/* Set on its side by the CSS below; the phone step hides it and leaves
             the flame alone, which is all a 320px screen has room for. */}
-        <span className="quiz-fab-label">Test Your Devotional Knowledge</span>
+        <span className="quiz-fab-label">Devotion Quiz</span>
       </button>
     </div>
   )
