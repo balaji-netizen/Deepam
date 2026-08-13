@@ -15,7 +15,7 @@ const sections = [
     image: 'https://images.unsplash.com/photo-1775427528127-a66ce3bb2bcb?w=1000&h=1250&fit=crop&auto=format',
     paras: [
       "The act of lighting a lamp is one of humanity's oldest rituals — predating formal religion, spanning continents, and crossing civilisations. In the Indian tradition, the lamp is not merely a source of light. It is a living symbol of divine consciousness.",
-      "The Sanskrit word 'Deepam' comes from 'Deepa' — meaning light, clarity, and radiance. When we light a lamp in our home or temple, we are invoking that same radiance. We are saying, without words: 'Let the divine presence fill this space.'",
+      "The Sanskrit word 'Dheepam' comes from 'Deepa' — meaning light, clarity, and radiance. When we light a lamp in our home or temple, we are invoking that same radiance. We are saying, without words: 'Let the divine presence fill this space.'",
       'The flame represents Jnana — knowledge that dispels the darkness of ignorance. Every time we light a lamp before prayer, we are making a spiritual statement: that we seek clarity, wisdom, and the presence of the sacred in our daily lives.',
     ],
     quote: '"Tamaso ma jyotir gamaya" — Lead us from darkness to light.',
@@ -46,13 +46,13 @@ const sections = [
     paras: ['While every day is auspicious for lighting a lamp in devotion, certain days carry a heightened spiritual charge — days when the cosmic energies align to amplify our prayers and intentions.'],
     calendar: [
       { day: 'Daily', occasion: 'Dawn & Dusk Lamp', note: 'Sandhi time — the meeting of day and night — is the most powerful time for prayer.' },
-      { day: 'Friday', occasion: 'Shukravar Deepam', note: 'Sacred to Goddess Lakshmi; sesame oil lamps invite prosperity and grace.' },
-      { day: 'Pournami (Full Moon)', occasion: 'Pournami Deepam', note: 'The full moon amplifies all spiritual practices a hundredfold.' },
-      { day: 'Pradosham (Bi-monthly)', occasion: 'Shiva Deepam', note: 'The auspicious twilight window for Shiva worship — sesame oil lamps especially powerful.' },
-      { day: 'Karthigai Month', occasion: 'Karthigai Deepam', note: 'Thousands of diyas illuminate every home and temple across Tamil Nadu.' },
-      { day: 'Diwali', occasion: 'Amavasai Deepam', note: 'New moon night — the darkest night, made radiant by millions of lamps.' },
+      { day: 'Friday', occasion: 'Shukravar Dheepam', note: 'Sacred to Goddess Lakshmi; sesame oil lamps invite prosperity and grace.' },
+      { day: 'Pournami (Full Moon)', occasion: 'Pournami Dheepam', note: 'The full moon amplifies all spiritual practices a hundredfold.' },
+      { day: 'Pradosham (Bi-monthly)', occasion: 'Shiva Dheepam', note: 'The auspicious twilight window for Shiva worship — sesame oil lamps especially powerful.' },
+      { day: 'Karthigai Month', occasion: 'Karthigai Dheepam', note: 'Thousands of diyas illuminate every home and temple across Tamil Nadu.' },
+      { day: 'Diwali', occasion: 'Amavasai Dheepam', note: 'New moon night — the darkest night, made radiant by millions of lamps.' },
       { day: 'Aadi Month', occasion: 'Aadi Velli', note: 'Friday in Aadi — especially powerful for Goddess Shakti worship.' },
-      { day: 'Thai Pongal', occasion: 'Harvest Deepam', note: 'Lamps lit to honour the sun and the bounty of the earth.' },
+      { day: 'Thai Pongal', occasion: 'Harvest Dheepam', note: 'Lamps lit to honour the sun and the bounty of the earth.' },
     ],
   },
   {
@@ -64,7 +64,7 @@ const sections = [
     practices: [
       { title: 'The Direction', rule: 'Face east or north-east for morning; north for evening lamp', why: 'East — direction of the rising sun. North — direction of the Pole Star, eternal and unchanging.' },
       { title: 'The Oil', rule: 'Sesame oil for daily use; ghee for festivals and special occasions', why: 'Sesame (gingelly) oil is "Nalla Ennai" (good oil) — considered the most spiritually pure for lamp lighting.' },
-      { title: 'The Wick', rule: 'Cotton wicks are traditional; odd numbers are auspicious', why: 'A single wick for daily puja; five wicks (Pancha Deepam) for major pujas representing the five elements.' },
+      { title: 'The Wick', rule: 'Cotton wicks are traditional; odd numbers are auspicious', why: 'A single wick for daily puja; five wicks (Pancha Dheepam) for major pujas representing the five elements.' },
       { title: 'The Vessel', rule: 'Brass for daily use; clay for Diwali; silver for major festivals', why: 'Brass is a satvik metal — it does not react with the oil and maintains ritual purity over years of use.' },
       { title: 'Extinguishing', rule: 'Never blow out the flame with your mouth', why: 'Breath is considered impure for the sacred flame. Use your hand or a lamp snuffer instead.' },
       { title: 'After Lighting', rule: 'Sit in silence for at least 3 minutes after lighting the lamp', why: 'The moments after lighting are for prayer, gratitude, and setting your intention for the day or evening.' },

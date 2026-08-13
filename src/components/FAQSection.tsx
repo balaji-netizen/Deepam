@@ -26,7 +26,7 @@ const faqCategories = [
     questions: [
       { q: 'Which direction should a lamp face during puja?', a: 'Traditionally, the lamp flame should face east or northeast during morning prayers. In the evening, facing north (towards the deity) is considered most auspicious.' },
       { q: 'Can I light a lamp every day?', a: 'Absolutely — and it is highly encouraged. Daily lamp lighting (especially at dawn and dusk) is one of the simplest, most powerful devotional practices. Consistency is more important than occasion.' },
-      { q: 'What are the auspicious days for lamp lighting?', a: 'While every day is auspicious for devotion, Fridays, Karthigai Deepam, Diwali, Pournami (full moon), and Pradosham evenings are considered especially powerful for lamp lighting rituals.' },
+      { q: 'What are the auspicious days for lamp lighting?', a: 'While every day is auspicious for devotion, Fridays, Karthigai Dheepam, Diwali, Pournami (full moon), and Pradosham evenings are considered especially powerful for lamp lighting rituals.' },
       { q: 'Should I always use a brass or clay diya?', a: 'Both are traditional. Clay (terracotta) diyas are preferred for Diwali and temple offerings. Brass and bronze are used for daily puja as they are durable and considered ritually pure metals.' },
     ],
   },

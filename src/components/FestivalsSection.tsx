@@ -1,4 +1,4 @@
-import Button from '@/components/Button'
+import Button02 from '@/components/shadcn-space/button/button-02'
 import EyebrowStar from '@/components/EyebrowStar'
 import SplitLines from '@/components/SplitLines'
 import type { SetPage } from '@/types'
@@ -29,7 +29,7 @@ const festivals = [
     copy: 'The festival of lights turns every threshold into an altar. Rows of clay diyas are lit at dusk to welcome Lakshmi into the home — the first of them traditionally filled with pure sesame or ghee oil.',
   },
   {
-    name: 'Karthigai Deepam',
+    name: 'Karthigai Dheepam',
     period: 'November – December',
     image: 'https://images.unsplash.com/photo-1775427528127-a66ce3bb2bcb?w=900&h=675&fit=crop&auto=format',
     copy: 'The oldest festival of light in the Tamil calendar. As the great beacon is lit atop Arunachala, households ring doorways, windows and terraces with agal vilakku until an entire street glows as one.',
@@ -74,9 +74,11 @@ export default function FestivalsSection({ setPage }: FestivalsSectionProps) {
             {/* One CTA for the whole section — each card is a summary, not its
                 own destination. */}
             <div data-anim="fade" data-delay="0.2" style={{ marginTop: 'var(--space-sm)' }}>
-              <Button onClick={() => setPage('festival-customs')} variant="gold">
+              {/* The shiny CTA (2026-08-13) — `Button02` is the gold pill with
+                  the ambient left→right reflection; nothing else changed. */}
+              <Button02 onClick={() => setPage('festival-customs')}>
                 Explore Festival Customs
-              </Button>
+              </Button02>
             </div>
           </div>
         </div>

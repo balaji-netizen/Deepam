@@ -1,11 +1,38 @@
 # Dheepam — Project Status
 
-**Updated:** 2026-08-12 · **Build:** green from a **clean `npm ci`** (`tsc --noEmit`
-clean, `npm run build` passes, 47 packages, 0 vulnerabilities)
-· **Repo root:** `Deepam Website\` · **Deploy:** Vercel-ready, not yet pushed
+**Updated:** 2026-08-13 · **Build:** green (`tsc --noEmit` clean, `npm run build`
+passes) · **Repo root:** `Dheepam Website\` · **Deploy:** Vercel-ready, not yet pushed
 
-> **Latest — deployment prep for GitHub + Vercel. No UI, content, styling or
-> motion changed.** `Deepam Website\` is now the repository root: `CLAUDE.md` and
+> **Latest — the homepage's content CTAs are the shadcn shiny button, re-skinned
+> onto the Dheepam gold pill.** New component at
+> `src/components/shadcn-space/button/button-02.{tsx,css}`, applied to **Explore
+> the Lamp Lighting Guide**, **Explore Festival Customs** and the closing band's
+> **Shop on Kaleesuwari**. Same 44px pill, same 14px Figtree, no black outline —
+> the once-per-hover highlight is replaced by an ambient reflection that crosses
+> **left → right** every 4.6s (1.2s of travel, 3.4s still). **The one decision
+> that matters is that the reflection paints *behind* the label, not over it:**
+> over the text the shipped alpha would drop the label to **3.14:1**; behind it
+> the label goes **7.81:1 at rest and 11.06:1 at the reflection's centre** — it
+> can never fall. **Shop Now (×2) and the Neivedhyam CTA are untouched** by
+> brief, and so are all four inner pages — `Footer` takes `currentPage` so the
+> closing band keeps its old pill off the homepage. See §Home page shiny CTA
+> (latest).
+>
+> Before that: **the navigation bar was invisible and unclickable on the homepage,
+> and the cause was one missing space.** `Navbar.tsx` wrote
+> `` `…z-50${overHero ? ' nav-over-hero' : ''}` `` — with `z-50` glued to the
+> interpolation, **Tailwind's scanner never extracted it**, `.z-50` was never
+> emitted, and the fixed bar fell back to `z-index: auto`. The hero section comes
+> later in tree order and is positioned, so **it painted straight over the whole
+> bar**: `elementFromPoint` at every single menu item returned
+> `div.shell-hero.hero-frame`, not the link. The menu was in the DOM, styled
+> correctly, and completely unreachable. Fixed by restoring the space so Tailwind
+> sees the class. **`.fixed`, `.top-0`, `.left-0` and `.right-0` from the same
+> string all worked**, which is exactly why it read as "the menu vanished" rather
+> than "the bar is unstyled". See §Navigation restored (latest).
+>
+> Before that: deployment prep for GitHub + Vercel. No UI, content, styling or
+> motion changed.** `Dheepam Website\` is now the repository root: `CLAUDE.md` and
 > `PROJECT_STATUS.md` moved into it, the parent keeps a pointer. **The find that
 > mattered: the Figma Make scaffold's `.gitattributes` routed every `*.png`,
 > `*.webp` and `*.mp4` through Git LFS.** Vercel clones without fetching LFS
@@ -76,11 +103,12 @@ working session, before `/clear`.
 ## ▶ NEXT TASK
 
 **Push to GitHub and connect Vercel.** Everything is prepared and verified; the
-repo is initialised at `Deepam Website\` with all 69 files staged and **no commit
-made yet** — that was left for you deliberately.
+repo is initialised at `Dheepam Website\` with all files staged and **no commit
+made yet** — that was left for you deliberately. The navigation fix below is
+included in what is staged.
 
 ```bash
-cd "D:/Balaji/projects/Deepam/Deepam Website"
+cd "D:/Balaji/projects/Dheepam/Dheepam Website"
 git commit -m "Dheepam microsite — initial commit"
 gh repo create dheepam-website --private --source=. --push
 ```
@@ -196,7 +224,14 @@ label sets to two lines inside the 52px button — now a wider band than before,
 since the row moved to the narrower copy column (measured correct at 1200 and 992:
 two lines, box still 52, row still 54 — but not seen).
 
-*Last done (2026-08-12): CTA shine + 16px prose + the unclickable slider arrow —
+*Last done (2026-08-13): the home page shiny CTA — `button-02` in
+`src/components/shadcn-space/button/`, on Lamp Lighting, Festivals and the
+closing band, with the reflection behind the label so the 14px text never drops
+below 7.81:1. Shop Now, the Neivedhyam CTA, the nav's Contact Us and all four
+inner pages untouched. See §Home page shiny CTA. Earlier the same day: the
+navigation bar was painted under the hero because `z-50` was glued to a `${`
+interpolation and Tailwind never emitted it — see §Navigation restored.
+Previously (2026-08-12): CTA shine + 16px prose + the unclickable slider arrow —
 gold pill rim off with a left→right hover shine, Shop Now and the Neivedhyam CTA
 back to `.cta-line`, that CTA on the paragraph's left rail, all homepage prose at
 16px, the chakra at 180s, and `.nv-controls` positioned so `.nv-track`'s
@@ -251,7 +286,7 @@ Fraunces/Inter (§Typography system), hero banner re-framed (§Hero plate).*
   the 271KB bundle; `bootstrap-grid.css` would cut that to ~70KB with no loss.
   Left as-is because full Bootstrap was the explicit choice — revisit only with
   the user.
-- `Deepam Website/src/imports/products/` still holds `pooja-bundles.png`,
+- `Dheepam Website/src/imports/products/` still holds `pooja-bundles.png`,
   `temple-oil.png` and now `lamp-oil.png`, all unreferenced — the last became
   dead when the Lamp Oil tile went to a scene photograph, and `agarbatti.png` was
   deleted this session when the same happened to Agarbatti. Safe to delete if
@@ -269,7 +304,303 @@ Fraunces/Inter (§Typography system), hero banner re-framed (§Hero plate).*
 
 ---
 
-## Deployment prep — GitHub + Vercel (2026-08-12, latest)
+## Home page shiny CTA (2026-08-13, latest)
+
+The shadcn "shiny button" pattern adapted to the Dheepam CTA system, home page
+only. **New:** `src/components/shadcn-space/button/button-02.tsx` and
+`button-02.css`. **Changed:** `LampLightingSection.tsx`, `FestivalsSection.tsx`,
+`Footer.tsx`, `App.tsx`. **`src/index.css` was not touched.** `tsc --noEmit`
+clean, `npm run build` green, `@layer bootstrap{` still ahead of `@layer theme{`.
+
+> **The brief referred to "the supplied Shadcn shiny-button implementation" but
+> no code came with it.** This is built from the canonical pattern — a narrow
+> gradient band swept across the box by a pseudo-element — not from a specific
+> file. If there was an intended source, diff it against `button-02.css`.
+
+### The project is not a shadcn/ui project
+
+There is **no `components.json`**, no `@/components/ui`, no `lib/utils`, no `cn`
+helper, no `class-variance-authority`, no Radix, and no `tailwind-merge`. The
+stack the brief asked to confirm is otherwise all present and current: **React
+19.2.3, TypeScript 5.9.3, Tailwind v4.2.4** (`@tailwindcss/vite`, no config file
+— the theme is `@theme` in `index.css`), Vite 8, npm + `package-lock.json`.
+
+**Nothing was installed, and shadcn was not initialised.** It would have added a
+second button system beside `.cta` — CVA variants, a `cn()` merge helper and a
+`components.json` whose aliases duplicate the existing `@ → src` one — to ship a
+gradient and a keyframe. The site's own `<Button>` already supplies everything
+`shadcn/ui`'s Button would (the polymorphic `<a>`/`<button>` split, variants, an
+icon slot), so `button-02` **wraps `<Button variant="gold">`** and adds one
+class. If shadcn/ui is wanted later for its own sake, that is a separate
+decision: `npx shadcn@latest init` with aliases `@/components`, `@/lib/utils`,
+`@/components/ui`, `@/hooks`.
+
+**Path.** The brief asked for `components/shadcn-space/button/button-02.tsx`.
+The repo's components root is `src/components/`, so the two files sit at
+`src/components/shadcn-space/button/` — the requested path, under the root the
+project actually uses. Import: `@/components/shadcn-space/button/button-02`.
+
+### The reflection paints behind the label — the one real finding
+
+The site's existing hover shine is a bare `::before`, which paints **over** the
+label. That is fine for 0.85s once per hover and wrong for something ambient, and
+the numbers say why. An ivory wash at alpha *a* lightens the ink and the fill
+together, so they converge:
+
+| ivory alpha | if the band were **over** the text | shipped: band **behind** the text |
+|---|---|---|
+| 0 (at rest) | 7.81:1 | 7.81:1 |
+| 0.10 | 6.64:1 | 8.57:1 |
+| 0.19 | 5.29:1 | 9.32:1 |
+| 0.28 | 4.11:1 ✗ | 10.11:1 |
+| **0.38 (peak)** | **3.14:1 ✗** | **11.06:1** |
+| 0.50 | 2.34:1 ✗ | 12.29:1 |
+
+Over the text the ceiling for 4.5:1 is **~0.245 alpha** — the effect would have
+had to be tuned down to almost nothing to stay legal. Behind it, the fill
+lightens and the ink does not, so contrast **only ever climbs** and no alpha can
+break it. That is `.cta.btn-02 > span, .cta.btn-02 > .cta-arrow { position:
+relative; z-index: 1 }` with the band at `z-index: 0`, and it is the reason the
+brief's "text must remain readable throughout" is satisfied by construction
+rather than by tuning. **Don't move the band above the label to make it brighter
+— it is the wrong knob.**
+
+### What the button is
+
+- **Geometry and type are entirely inherited.** 44px `min-height`, `999px`
+  corner, 14px Figtree 600 at 0.1em tracking, 34px side padding (22 below sm),
+  the 12px gap and the shared arrow with its 6px hover nudge — all from
+  `.cta` / `.cta-gold`. Measured identical on all three at 320 / 375 / 576 / 768
+  / 992 / 1440: **height 44, 14px Figtree** at every width, and the four
+  non-shiny CTAs on the page read the same 44/14/Figtree.
+- **No black outline.** `border-color: transparent`, not deleted — `.cta-gold` is
+  `border: 1px` and the box is `min-height`-driven. Measured
+  `rgba(0, 0, 0, 0)` on all three.
+- **The band:** `::after`, 38% of the box wide, ivory `0 → 0.38 → 0` across 90°,
+  skewed −18° so the leading edge rakes (the same rake the hover shine used).
+  `translateX(-160% → 320%)` over **26% of a 4.6s cycle** — 1.2s of travel, then
+  3.4s parked off the right edge. Proven from the live animation object
+  (`getAnimations`, CLAUDE.md §7.24): `btn-02-shine`, `::after`, `running`,
+  4600ms, infinite, keyframes `translateX(-160%) skewX(-18deg)` →
+  `translateX(320%) skewX(-18deg)`. **Left to right, read off the keyframes.**
+- **The legacy `::before` shine is switched off on this button** —
+  `content: none` at (0,3,1), so the `:hover` rules in `index.css` have no
+  pseudo-element to animate. Measured `::before content: none` on all three, and
+  still `""` on the nav's Contact Us, which keeps it.
+- **States.** Hover is inherited (#E3B341, label **9.70:1**). Pressed is new —
+  #B8901F plus a 1px settle, label **6.34:1** — because a touch device has no
+  hover to read. `.cta`'s transition shorthand had to be restated to put
+  `transform` on 0.12s: on the house 0.45s the settle arrived after the finger
+  had left.
+- **Focus.** Restated rather than inherited, because **the closing band needed
+  fixing**: `.cta:focus-visible` is maroon, and maroon *is* that band —
+  **1.00 / 1.33 / 1.54:1** against its three stops, i.e. invisible. Ivory clears
+  it at **8.71 / 11.57 / 13.38:1**. On the ivory sections the ring stays maroon
+  at **8.71:1** (the global gold ring is 2.35:1 and unusable). `outline-offset:
+  3px` keeps the ring on the section ground, so the ground is what it has to
+  clear.
+- **Reduced motion** removes the band at the element (`content: none`), not via
+  the global `animation-duration: 0.001ms` clamp — with the duration clamped the
+  band is still composited for a frame. **Proven behaviourally:** applying the
+  same declaration live took the running `btn-02-shine` count **3 → 0**, and
+  removing it took it back to 3.
+- **Two bonus modes.** `prefers-contrast: more` puts the `#7D620D` rim back
+  (5.70:1 on ivory) so the *block* gets a 3:1 boundary for users who asked the OS
+  for one — without changing the default look the brief specified.
+  `forced-colors: active` drops the band and takes `ButtonBorder`.
+
+### Scope — what did not change
+
+- **Shop Now (both tiles) and the Neivedhyam control-row CTA are untouched.**
+  Measured on the live page: `cta cta-line`, `border-radius: 0`, transparent
+  background, `::after` = the underline with **no animation**, `::before` = none,
+  height 44. No `.btn-02`.
+- **The four inner pages are untouched.** `Footer` renders `.closing` under every
+  route, so it takes `currentPage` and picks `Button02` on home and the untouched
+  `<Button variant="gold">` everywhere else — one props object, two renderers.
+  Verified on `lamp-lighting`: **0** `.btn-02` nodes, the closing CTA is
+  `cta cta-gold closing-cta` with its `::before` intact, and *Shop Dheepam Lamp
+  Oil* still reads `rgb(125, 98, 13)` / `overflow: visible`.
+- **`index.css` was not opened.** Everything new lives in `button-02.css`.
+- Document height 1440: **6371** against the recorded 6370. Real horizontal
+  overflow at 320 / 375 / 576 / 768 / 992 / 1440: still only the three documented
+  `.hero-media scale(1.1)` layers. `.magnetic` still **0**, `[data-anim]` still
+  **38**. Own `error` / `unhandledrejection` / `console.error` / `console.warn`
+  capture across a route walk (home → guide → home → customs → home) returned
+  **zero**.
+- **Hit-tested, not `.click()`ed** (CLAUDE.md §7.20). `.btn-02` adds `isolation:
+  isolate`, which makes each button a stacking context, so this mattered:
+  `elementFromPoint` at each button's own centre returns its label span and
+  `el.contains(t)` is true for all three, with the page collapsed to bring each
+  into view (§7.21). Both routing CTAs were then driven through a real dispatch
+  and land on their pages.
+
+### The nav's Contact Us was deliberately left on the old treatment
+
+It is the one gold pill that is **site chrome rather than page content**: fixed
+to the viewport, rendered under all five routes, and carrying its own
+`.nav-over-hero` state (the ivory ring over the banner). Two reasons it is not
+shiny. A permanently-looping highlight pinned to the top of the window is the one
+place ambient motion stops being ambient — every other shiny CTA is only in view
+while you are reading its section. And converting it means either changing the
+inner pages, which the brief forbids, or route-gating the header. It keeps the
+identical gold pill and its once-per-hover shine, so nothing reads as mismatched.
+**If you want it shiny it is one line** — `className="nav-cta btn-02"` on both
+`<Button>`s in `Navbar.tsx` (bar and sheet), gated on `currentPage === 'home'`.
+
+### WCAG summary
+
+| Check | Result |
+|---|---|
+| Label 14px, ≥4.5:1, at rest | #111 on #C9A227 — **7.81:1** |
+| Label during the shine, worst frame | **7.81:1** (rises to 11.06 at the peak) |
+| Label on hover / pressed | **9.70:1** / **6.34:1** |
+| Focus ring vs adjacent ground, ivory sections | maroon — **8.71:1** (needs 3:1) |
+| Focus ring vs adjacent ground, closing band | ivory — **8.71–13.38:1** |
+| Touch target | **44×44 floor held at every width**, plus `touch-action: manipulation` |
+| Reduced motion | band removed at the element; 3 → 0 animations, proven live |
+| Text carried by the shine? | **No** — the shine only ever raises contrast |
+| Block boundary (non-text) | **2.38:1 on ivory — the known, accepted trade**; see below |
+
+**The one thing that is still not conformant, and it is inherited, not new:** the
+gold fill has no 3:1 boundary on the ivory sections. That trade was made on
+2026-08-12 when the brief asked the `#7D620D` rim off, and this brief repeated
+"no black outline or border", so it stands. The pill's cues are its fill, the
+uppercase label, the arrow and now the reflection. `prefers-contrast: more`
+restores the rim for users who ask. On the closing band the fill is 3.66–5.63:1
+and the question does not arise.
+
+**WCAG 2.2.2 (Pause, Stop, Hide) is worth naming rather than glossing.** The
+reflection is decorative, auto-starting and loops indefinitely, which is the
+shape 2.2.2 addresses — there is no pause control on it. It follows the
+precedent already set by `.mandala-spin`, the 180s chakra rotation that has run
+on three homepage nodes since 2026-08-12 with no control either, and it is off
+entirely under `prefers-reduced-motion`. **If that is not acceptable, the fix is
+to make the loop finite** — `animation-iteration-count: 3` in `button-02.css`
+turns it into a 14s flourish on arrival and satisfies 2.2.2 outright.
+
+### Not verified
+
+**The pane refused to composite all session again** (`screenshot` returns "the
+Browser pane is not displayed"), so every number above is
+`getBoundingClientRect()` / `getComputedStyle` / `getAnimations`, and **no frame
+of the reflection was seen in the real render**. What was done instead
+(CLAUDE.md §7.9): the pill was rebuilt in Pillow at its measured geometry —
+392×44, radius 22, 34px padding, a 148.25px band at 0.38 skewed −18° — and the
+sweep sampled at seven keyframe positions plus every state, then read. It reads
+as a quiet raking highlight with the label legible in every frame. **The
+typeface in that sheet is a system stand-in, not Figtree** (Figtree is proven on
+the live DOM); the sheet is about the light, not the type. Also unobserved:
+`:focus-visible` on any CTA (§7.19 — the rules and their resolved colours were
+asserted in the built CSS and the ratios computed), and the press settle.
+
+---
+
+## Navigation restored (2026-08-13)
+
+**One character. `src/components/Navbar.tsx:105`, and nothing else.**
+
+```diff
+- className={`fixed top-0 left-0 right-0 z-50${overHero ? ' nav-over-hero' : ''}`}
++ className={`fixed top-0 left-0 right-0 z-50 ${overHero ? 'nav-over-hero' : ''}`}
+```
+
+### What was actually wrong
+
+Not the markup, not the CSS, not the responsive rules — **all of it was already
+correct and none of it was touched.** `navLinks` still held all five items with
+both dropdowns; `.nav-link`, its hover underline, the active-state colours and
+the mobile sheet were all intact and rendering.
+
+The bar was simply **painted underneath the hero banner.**
+
+`z-50` written as `` z-50${…} `` gives Tailwind's scanner the candidate `z-50$…`,
+which is not a valid utility, so **`.z-50` was never emitted into the stylesheet**
+— confirmed: `.z-50` count in the built CSS was **0**. The `<nav>` therefore
+computed to `z-index: auto`. It is `position: fixed`; `#hero` is `position:
+relative` and comes later in tree order; two positioned elements both at
+`z-index: auto` in the same stacking context paint in **DOM order**, so the hero
+won. The nav was behind an opaque photograph.
+
+**The evidence, before the fix** — `elementFromPoint` at the centre of every
+single menu item:
+
+| Item | Topmost element at its own centre | Hits itself |
+|---|---|---|
+| Dheepam — home | `div.shell-wide.shell-hero.hero-frame` | ✗ |
+| Home | `div.shell-wide.shell-hero.hero-frame` | ✗ |
+| Products | `div.shell-wide.shell-hero.hero-frame` | ✗ |
+| Lamp Lighting | `div.shell-wide.shell-hero.hero-frame` | ✗ |
+| Festivals & Traditions | `div.shell-wide.shell-hero.hero-frame` | ✗ |
+| CONTACT US | `div.shell-wide.shell-hero.hero-frame` | ✗ |
+
+The nav did not appear anywhere in the top four layers of the paint stack. After
+the fix, all six return themselves and `getComputedStyle(nav).zIndex` is `50`.
+
+**The reason it read as "the menu disappeared" rather than "the bar looks wrong":
+`fixed`, `top-0`, `left-0` and `right-0` came from the same template literal and
+all four emitted fine** — they are followed by spaces. Only the class touching
+`${` was dropped. So the bar was still perfectly positioned across the top of the
+viewport, full width, correct height, correct type — just behind the banner.
+
+### This was not introduced by the deployment work
+
+The production CSS built at the **start** of the deployment session — before any
+change — hashed `index-DaJEz4f6.css`, and `.z-50` is absent from it. The final
+deployment build produced **the same hash**, so the stylesheet was byte-identical
+throughout. The bug predates that session and came in with `.nav-over-hero`
+itself (§Banner + navigation blending, `Navbar.tsx` last written 2026-08-12
+17:27) — the edit that introduced the `overHero` interpolation is the edit that
+glued it to `z-50`. There is no commit to revert to (the repo has no history
+yet), so the fix is forward, and it restores the documented intent: `index.css`
+line 648 already says `.quiz-fab-wrap` sits *"at z-index 40 … under the fixed nav
+(z-50)"*.
+
+### Verification
+
+Hit-testing, not screenshots — the Browser pane was not compositing, so
+`elementFromPoint` and computed styles were the reliable instruments.
+
+- **Desktop 1280** — `z-index: 50`; all 6 items hit-test to themselves. Over the
+  banner: active *Home* `#F5D161` gold, inactive links ivory `#FFFDF7`, CTA ink
+  on gold — matching §Banner + navigation blending.
+- **Tablet 768** — burger `display: block`, 40×29, hit-testable; the four desktop
+  links correctly collapse to zero width; CTA retained.
+- **Mobile 375** — bar 76px, burger and logo both hit-testable, no horizontal
+  overflow.
+- **Drawer, at both 768 and 375** — all **11** controls present and every one
+  hit-testable: logo, Menu, Home, Products (+ Lamp Oil, Agarbathi), Lamp
+  Lighting, Festivals & Traditions (+ Festival Customs, Neivedhyam Dishes &
+  Recipes), Contact Us. Scroll lock (`body overflow: hidden`) working. **No item
+  was removed or renamed.**
+- **Hover / active** — `.nav-link::after` is the gold `#C9A227` hairline at
+  `scaleX(0)`, taken to `scaleX(1)` by `:hover` and by `[data-active='true']`;
+  measured on the active link at 100% width, 1px, gold. `data-active` reads
+  `true` on the current page and `false` on the other three.
+- **Scrolled state** — React writes `background: rgba(255,253,247,0.92)` and
+  `--nav-cur: var(--nav-h-scrolled)` → resolves to `92px`, and `.nav-over-hero`
+  is dropped. *(The computed background and height lag behind the inline style in
+  the preview pane: both are mid-`transition` and transitions do not advance
+  without compositing. Read the inline style attribute, not the computed value.)*
+- **Every Tailwind utility in `Navbar.tsx` audited against the built CSS** — all
+  17 present, including the escaped ones (`.gap-1\.5`, `.left-1\/2`,
+  `.-translate-x-1\/2`). `z-50` was the only casualty.
+- `tsc --noEmit` clean, `npm run build` green. CSS grew exactly **+20 bytes** —
+  `.z-50{z-index:50}`, the one rule that was missing.
+
+### Scope
+
+Nothing else changed. No banner, no CTA styles, no page sections, no inner pages,
+no CSS file. The two other template literals in the codebase that glue a class to
+`${` — `ProductsShowcase.tsx:102` (`tile-plinth fold-plinth${…}`) and
+`StickyCTA.tsx:42` (`quiz-fab-wrap${…}`) — were checked and are **safe**: both
+concatenate hand-written design-system classes that live in `index.css`
+unconditionally, so the scanner is irrelevant to them. Only Tailwind utilities
+are exposed to this failure.
+
+---
+
+## Deployment prep — GitHub + Vercel (2026-08-12)
 
 Repo structure, asset organisation and deploy config only. **No component, CSS,
 copy, animation or layout change** — `src/index.css` and every file under
@@ -307,14 +638,14 @@ bytes starting `RIFF....WEBP` — real content, matching disk exactly. A scan ac
 | 2 | **`<title>` was literally `Figma Make App`**, and so was `og:title` — `.figma/make/site.json` had no `title` key and `vite.config.ts` falls back to that string. | Real title + description + `language: "en"` in `site.json`. |
 | 3 | **`robots.txt` was `User-agent: *` / `Disallow: /`** and the HTML carried `<meta name="robots" content="noindex, nofollow">`, from `robots.index: false`. The site was blocked from every search engine. | `robots.index: true` (your call this session). No `robots.txt` is emitted now, and the meta tag is gone. |
 | 4 | **No favicon** — `/favicon.ico` would 404 on every page load. | `public/favicon.png` + `public/apple-touch-icon.png` generated from the existing Dheepam roundel (`src/imports/dheepam-neww.png`), padded square so the mark is not stretched; the touch icon is flattened onto the site ivory because iOS composites transparency onto black. Wired via `icons.icon` in `site.json`. |
-| 5 | **Hard-coded `D:\Balaji\projects\Deepam\...` paths** in `tools/build-hero-plate.py` and `tools/build-story-plate.py`; `build-section-plates.py` and `build-dish-plates.py` used depth arithmetic that assumed the old two-level layout. | All four resolve from `Path(__file__)` now, with a `DHEEPAM_IMAGES` env override. **No production code ever referenced a local path** — this was dev tooling only, but it is the same class of problem. |
+| 5 | **Hard-coded `D:\Balaji\projects\Dheepam\...` paths** in `tools/build-hero-plate.py` and `tools/build-story-plate.py`; `build-section-plates.py` and `build-dish-plates.py` used depth arithmetic that assumed the old two-level layout. | All four resolve from `Path(__file__)` now, with a `DHEEPAM_IMAGES` env override. **No production code ever referenced a local path** — this was dev tooling only, but it is the same class of problem. |
 | 6 | **`.claude/launch.json` pointed at `D:\...\run-dev.cmd`**, a wrapper whose only job was to `cd` into the website folder. | Replaced with a portable `npm run dev` config inside the repo, plus a `dheepam-dist-preview` entry for checking a production build. `run-dev.cmd` is now redundant (left in the parent, uncommitted). |
 
 ### Repo root moved
 
-`Deepam Website\` is the repository root. `CLAUDE.md` and `PROJECT_STATUS.md` were
+`Dheepam Website\` is the repository root. `CLAUDE.md` and `PROJECT_STATUS.md` were
 **moved** into it — not copied, so there is exactly one of each and they cannot
-drift. The parent `Deepam\` keeps a five-line pointer `CLAUDE.md` so a session
+drift. The parent `Dheepam\` keeps a five-line pointer `CLAUDE.md` so a session
 started there is still routed to the real files. The four `tools/*.py` builders are
 consolidated in the repo; their 1–2MB contact sheets are gitignored (regenerable).
 
@@ -397,11 +728,11 @@ missing. `public/` now exists and holds the two favicons.
 | Hero | Dark amber banner, edge-to-edge (no bottom fade). **The header dissolves into it** (2026-08-12): on the homepage, unscrolled, the bar is transparent with no hairline and no backdrop blur, light type over `.nav-scrim` — see §Banner + navigation blending. **Fixed 720px desktop height on a 1520px container** (`.shell-hero`) — see §Homepage update. 3-slide headline rotator, 16px description, inline slide markers. **No CTA and no scroll cue** (removed 2026-08-12). Plate is pre-framed 1.649:1 — see §Hero plate. |
 | Brand Story | **Rebuilt 2026-08-11 to the Our Story reference.** Warm-cream band (`.story`), two halves: copy cols 1–6 (eyebrow, two-tone headline, kolam divider, two paragraphs, quote card) and a sharp-cornered 14:15 plate cols 7–12, tops aligned. **Plate capped at `--story-plate-max: 520px`, flush to the content rail, and the section runs its own tighter `padding-block` so it clears one desktop fold — 677px at 1440.** Plate is the supplied `Images/Our Story.png` → `imports/our-story.webp`, authored at exactly 520×557, so it **keeps 14:15 at every breakpoint** (2026-08-12) — no crop anywhere. **No CTA.** |
 | Products | **Two products only** (Lamp Oil, Agarbatti). Each tile's `Shop Now` is a **`.cta-line` text link** — reverted 2026-08-12 (latest) after one session as a gold pill, so it takes no shine; still a `<span>`, because the whole tile is the link. Header is two halves on the tiles' rails: eyebrow + title 1–6, the "Pure, trusted…" line 7–12 (back from Brand Story, 2026-08-11). Tiles 13/6, equal height. **Both are full-bleed *scene* photographs now** (2026-08-12) — matched 1400×646 shots on the same gold set, so the pair reads as one campaign. The cut-out-packshot treatment (`scene` falsy → `.tile-shot` on a plinth) is still in the code but has no consumer. |
-| Lamp Lighting | Split editorial — copy cols 1–6, 4:5 plate cols 8–12 — plus the slow-spinning mandala. **The plate is the supplied `Lamp Lighting Guide.mp4`** (2026-08-12), authored at 550×690 so it fills the existing 4:5 frame with no crop: muted autoplay on a loop, `playsInline`, a 40px gold pause chip bottom-left, and no autoplay under `prefers-reduced-motion`. **The folded steps no longer flatten to 16:9 / 4:3** — the clip keeps 4:5 and is capped at 360px (tablet) / 300px (phone), centred. Four topics live on the guide page, not here. |
-| Festivals | **Restored 2026-08-11.** Header (title left, intro + CTA right, **top-aligned**) + three `.col-3up` cards — Diwali, Karthigai Deepam, Navarathri. The CTA sits under its intro, not under the cards. Cards turn on their side below 767.98px. **The Diwali plate is `photo-1635192592106-77a5aacbe1a3`** (2026-08-12) — a flower kolam ringed with lit diyas; it no longer matches the Festival Customs page's Diwali image. |
+| Lamp Lighting | Split editorial — copy cols 1–6, 4:5 plate cols 8–12 — plus the slow-spinning mandala. **The plate is the supplied `Lamp Lighting Guide.mp4`** (2026-08-12), authored at 550×690 so it fills the existing 4:5 frame with no crop: muted autoplay on a loop, `playsInline`, a 40px gold pause chip bottom-left, and no autoplay under `prefers-reduced-motion`. **The folded steps no longer flatten to 16:9 / 4:3** — the clip keeps 4:5 and is capped at 360px (tablet) / 300px (phone), centred. Four topics live on the guide page, not here. **Its CTA is the shiny `Button02`** (2026-08-13). |
+| Festivals | **Restored 2026-08-11.** Header (title left, intro + CTA right, **top-aligned**) + three `.col-3up` cards — Diwali, Karthigai Dheepam, Navarathri. The CTA sits under its intro, not under the cards, and is the shiny `Button02` (2026-08-13). Cards turn on their side below 767.98px. **The Diwali plate is `photo-1635192592106-77a5aacbe1a3`** (2026-08-12) — a flower kolam ringed with lit diyas; it no longer matches the Festival Customs page's Diwali image. |
 | Neivedhyam | **5-slide offering slider**, and the five are the brief's own dishes in its own order (2026-08-12, latest): **Paal Payasam · Boondi Laddu · Puliyodarai · Sakkarai Pongal · Kesari Bath**, each on a **local supplied plate** from `tools/build-dish-plates.py`. Draggable GSAP track, per-slide supporting note. **Plate and copy column are top-aligned.** The control row sits in the **copy column and is split** (2026-08-12, latest): the CTA on the paragraph's **left rail**, `01 / 05` · ← · → on the content rail, and nothing else (the dots went 2026-08-12); its bottom lands on the plate's bottom edge, which leaves structural space under the note. Arrows are **48px round gold chips** — still rimmed. The CTA deep-linking `#neivedhyam-dishes` is a **`.cta-line`** again, which is what makes the left alignment exact and what retired the stacked 992–1199.98 row. **`.nv-controls` is `position: relative; z-index: 1`** — without it `.nv-track`'s `will-change: transform` stacking context covers the row and the next arrow is unclickable. Nothing interactive is left inside the track, but the drag-then-click guard stays. |
 | FAQ | Two-column: heading + categories left, accordion right. Titled **"Frequently Asked Questions"**. |
-| Closing | `.closing` — maroon→burgundy + gold, the one dark surface. Two-column: lotus-bloom photograph left, copy + the shared **gold pill CTA** right (it was an outlined gold hairline until 2026-08-12; `.closing-cta` now adds only a soft drop shadow). The pill carries the rim-off + hover shine treatment, which reaches the inner pages too because `Footer.tsx` renders `.closing` under every route. Its `.lead` is the one homepage paragraph still at 20px — see §NEXT TASK. **Compacted 2026-08-11 to 480px at 1440** (was ~925): no glyph, no eyebrow, grid capped at 1080, static CTA, and **no divider below the CTA** (removed 2026-08-11 — it read as an underline). See §Closing CTA and §Closing CTA compaction. Then light footer. |
+| Closing | `.closing` — maroon→burgundy + gold, the one dark surface. Two-column: lotus-bloom photograph left, copy + the shared **gold pill CTA** right (it was an outlined gold hairline until 2026-08-12; `.closing-cta` now adds only a soft drop shadow). **On the homepage that pill is the shiny `Button02`** (2026-08-13) with an ivory focus ring, because maroon — the site's CTA ring — is this band's own colour and measures 1.00:1 on it. Off the homepage it is the unchanged `<Button variant="gold">` with the rim-off + hover shine, which is why `Footer` now takes `currentPage`: `.closing` renders under every route. Its `.lead` is the one homepage paragraph still at 20px — see §NEXT TASK. **Compacted 2026-08-11 to 480px at 1440** (was ~925): no glyph, no eyebrow, grid capped at 1080, static CTA, and **no divider below the CTA** (removed 2026-08-11 — it read as an underline). See §Closing CTA and §Closing CTA compaction. Then light footer. |
 | Quiz | **Removed from homepage.** Now its own `knowledge` page, reached via the sticky launcher and the footer. |
 | Sticky CTA | **Vertical tab flush to the right edge, centred on the viewport.** 46px wide desktop / 40px tablet+phone, flame + on-its-side label — **no count chip** (removed 2026-08-12); label hidden ≤575.98px. Greeting bubble opens to its left once per session. Hidden on the knowledge page. |
 
@@ -1016,7 +1347,7 @@ slide is the savoury semolina offering top to bottom, and the old slide's ritual
 pot is gone with it. Note the set's coverage argument shifts slightly: the five
 slides used to be rice / sweet / dumpling / savoury / drink, and the rice offering
 is now a semolina one. (`FestivalCustomsPage.tsx` still lists *Thiruvannamalai
-Sweet Pongal* under Karthigai Deepam — a different page, explicitly out of scope,
+Sweet Pongal* under Karthigai Dheepam — a different page, explicitly out of scope,
 and correct in its own context.)
 
 **The photograph was audited, not trusted** (`CLAUDE.md` §6). Unsplash has no
@@ -1272,7 +1603,7 @@ Five-point brief, **homepage only**. **Files changed:** `BrandStory.tsx`,
 `NeivedhyamSection.tsx`, `Footer.tsx`, `index.css`; **new:**
 `tools/build-section-plates.py`, `src/imports/our-story.webp`,
 `src/imports/products/agarbatti-scene.webp`; **deleted:**
-`src/imports/story-deepam.webp`, `src/imports/products/agarbatti.png`.
+`src/imports/story-dheepam.webp`, `src/imports/products/agarbatti.png`.
 No inner page was opened.
 
 **1 · Our Story plate → the supplied `Images/Our Story.png`.**
@@ -2010,14 +2341,14 @@ corner is served by the mandala and the card's petals.
 
 **The plate is now local, and tool-built.** *(Superseded 2026-08-12: the section
 ships the supplied `Images/Our Story.png` as `imports/our-story.webp` instead, and
-`story-deepam.webp` is deleted. `tools/build-story-plate.py` and
-`Images/story-deepam-source.jpg` are kept because the headroom-growing technique
+`story-dheepam.webp` is deleted. `tools/build-story-plate.py` and
+`Images/story-dheepam-source.jpg` are kept because the headroom-growing technique
 below is the pattern for any future plate that needs reframing — but running the
 tool no longer produces an asset the site imports. See §Imagery, nav CTA, slider
 group & footer.)* `tools/build-story-plate.py` takes
-`Images/story-deepam-source.jpg` (the same brass-deepam photograph the section
+`Images/story-dheepam-source.jpg` (the same brass-dheepam photograph the section
 already used, pulled down from Unsplash at 2800px) and produced
-`src/imports/story-deepam.webp`, 1400×1500, 73.6KB:
+`src/imports/story-dheepam.webp`, 1400×1500, 73.6KB:
 - a 14:15 window cut from the source's own height is only 1742px wide and the
   lamp bowl alone measures 1680 of it, so **430px of bokeh headroom is grown
   first** — the top band mirrored, stretched and blurred, exactly the hero
@@ -2175,7 +2506,7 @@ card period 5.70:1, card body 12.42:1, tab label 10.11:1.
 
 ## Layout adoption + Bootstrap (2026-08-11)
 
-Homepage adopted against `Deepam website home.png` (1920×9176, authored at a
+Homepage adopted against `Dheepam website home.png` (1920×9176, authored at a
 ~1440 viewport — its rails measure within 5px of the existing 1480 container, so
 the container did **not** change). Scope was layout only: typography, the
 products header, hero framing and the closing CTA were explicitly held.
@@ -2434,9 +2765,9 @@ zero component files touched.
   brief's scale doesn't name a "Lead" tier, so the existing larger-intro-copy
   size was left alone; it now renders in Inter automatically via `--font-sans`.
 - A few components set their own inline heading `font-size` via `clamp()`
-  ([FAQSection.tsx:90](Deepam%20Website/src/components/FAQSection.tsx:90),
-  [FestivalCustomsPage.tsx:132](Deepam%20Website/src/components/FestivalCustomsPage.tsx:132),
-  [LampLightingPage.tsx:106](Deepam%20Website/src/components/LampLightingPage.tsx:106))
+  ([FAQSection.tsx:90](Dheepam%20Website/src/components/FAQSection.tsx:90),
+  [FestivalCustomsPage.tsx:132](Dheepam%20Website/src/components/FestivalCustomsPage.tsx:132),
+  [LampLightingPage.tsx:106](Dheepam%20Website/src/components/LampLightingPage.tsx:106))
   on top of the `.h2`/`.h3` class. Those bespoke clamps were left untouched —
   they still inherit Fraunces/Inter through the class's `font-family`, only
   the literal size numbers are pre-existing and unrelated to this change.

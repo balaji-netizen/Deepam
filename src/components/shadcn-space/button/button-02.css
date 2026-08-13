@@ -1,0 +1,212 @@
+/* ══════════════════════════════════════════════════════════════
+   button-02 — the Dheepam shiny CTA
+
+   The shadcn "shiny button" pattern (a narrow light reflection swept
+   left → right by a pseudo-element) re-skinned onto the Dheepam CTA
+   system rather than onto shadcn's white/dark default.
+
+   **Nothing about the button's geometry or type lives here.** The
+   component renders the site's own `<Button variant="gold">`, so the
+   pill corner (`--cta-radius: 999px`), the 44px box (`--cta-h`), the
+   14px Figtree 600 label with its 0.1em track, the 34px side padding,
+   the 12px gap to the arrow and the arrow's own hover nudge all come
+   from `.cta` / `.cta-gold` in `index.css` exactly as they do for every
+   other CTA on the page. This file adds three things and nothing else:
+   the ambient reflection, the states around it, and the accessibility
+   guarantees that make the reflection safe.
+
+   Selectors are `.cta.btn-02` (0,2,0) rather than `.btn-02` (0,1,0) so
+   they outrank `.cta-gold`'s own declarations regardless of which
+   stylesheet the bundler emits first.
+   ══════════════════════════════════════════════════════════════ */
+
+.cta.btn-02 {
+  /* Retunable in one place. `--btn-02-peak` is the one value with a hard
+     ceiling — see the contrast note on the reflection below. */
+  --btn-02-peak:  0.38;   /* ivory alpha at the reflection's centre       */
+  --btn-02-band:  38%;    /* reflection width, as a share of the box      */
+  --btn-02-cycle: 4.6s;   /* one sweep + the quiet gap after it           */
+  /* The sweep's share of that cycle is the `26%` keyframe below — 1.2s of
+     travel — and it cannot be a token, since a keyframe selector will not
+     take a `var()`. Retune the two together. */
+
+  position: relative;
+  /* What clips the reflection to the 999px corner: `::after` does not
+     inherit `border-radius`, so it is the parent's overflow that cuts
+     it. Box-shadows paint outside the overflow box and are unaffected,
+     which is why the pill keeps its soft lift. */
+  overflow: hidden;
+  /* Contains the two z-indexes below to this button. Without it they
+     resolve against whatever stacking context the section provides. */
+  isolation: isolate;
+
+  /* **No black outline or border** (brief). `.cta-gold` is `border: 1px`
+     and the box is `min-height`-driven, so the rim goes transparent
+     rather than being deleted — dropping the declaration would move the
+     padding box 2px in each axis and re-open the 44px promise. See the
+     `prefers-contrast` block at the foot for where it comes back. */
+  border-color: transparent;
+
+  /* Touch: the 44px `min-height` is the target floor (WCAG 2.5.5 AAA,
+     and well past 2.5.8 AA's 24px); these two only stop mobile browsers
+     adding a 300ms delay and a grey flash on top of it. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── The label and the arrow sit ABOVE the reflection ──
+   This is the single most important rule in the file and it is an
+   accessibility decision, not a visual one.
+
+   The label is #111 on #C9A227 — **7.81:1**. If the reflection paints
+   *over* it (which is what a bare `::before` does, and what the site's
+   existing hover shine does), the ivory wash lightens the ink and the
+   fill together and the two converge: at 0.42 alpha the label measures
+   **2.83:1** mid-sweep, and the ceiling for 4.5:1 is only ~0.245 alpha.
+   Painting the reflection *behind* the type inverts that completely —
+   the fill lightens, the ink does not, so contrast only ever climbs:
+   **7.81:1 at rest, 11.46:1 at the reflection's centre.** The text is
+   never carried by the shine and never harmed by it, at any alpha.
+
+   `> span` is the label `<Button>` wraps every CTA's children in;
+   `.cta-arrow` is the shared arrow glyph. */
+.cta.btn-02 > span,
+.cta.btn-02 > .cta-arrow {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── The reflection ──
+   One narrow highlight, ivory, zero at both ends, skewed −18° so the
+   leading edge rakes rather than sweeping as a flat bar — the same
+   rake the site's hover shine uses, so the two read as one language.
+
+   0.38 alpha is chosen for restraint, not for legibility: because the
+   band is behind the type (above), the label's contrast is unaffected
+   by this number and the gold fill itself only ever gets lighter, so
+   there is no value here that can make the CTA fail. */
+.cta.btn-02::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: var(--btn-02-band);
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgba(255, 253, 247, 0) 0%,
+    rgba(255, 253, 247, var(--btn-02-peak)) 50%,
+    rgba(255, 253, 247, 0) 100%);
+  transform: translateX(-160%) skewX(-18deg);
+  animation: btn-02-shine var(--btn-02-cycle) linear infinite;
+}
+
+/* Left → right, then park off the right edge for the rest of the cycle.
+   The hold is what makes this ambient rather than a strobe: 1.2s of
+   travel in 4.6s, so the button is still for three quarters of the time.
+   The easing is on the sweep interval only — the hold must stay linear
+   or it would creep. */
+@keyframes btn-02-shine {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.32, 1);
+  }
+  26% { transform: translateX(320%) skewX(-18deg); }
+  100% { transform: translateX(320%) skewX(-18deg); }
+}
+
+/* ── The legacy hover shine is switched off on this button ──
+   `index.css` gives `.home-page .cta-gold`, `.closing .cta-gold` and
+   `.nav-cta` a `::before` highlight that runs once per hover. Any CTA
+   that carries `.btn-02` has the ambient one instead; two reflections
+   crossing the same pill at different speeds is not a treatment.
+   `content: none` means the pseudo-element is never generated, so the
+   `animation` those rules set on `:hover` has nothing to run on.
+   (0,3,1) here against (0,2,1) and (0,3,1) there — it wins on
+   specificity for `content` and does not depend on file order. */
+.home-page .cta.btn-02::before,
+.closing .cta.btn-02::before,
+.nav-cta.cta.btn-02::before { content: none; }
+
+/* ── States ──
+   Hover comes from `.cta-gold:hover` (#E3B341, 9.70:1 with the label)
+   and `.cta:hover .cta-arrow` (the 6px arrow nudge) — both inherited,
+   both left alone. Only the pressed state is new: a deeper gold plus a
+   1px settle, so a press reads on a touch device where there is no
+   hover to read. #111 on #B8901F is **6.34:1**. */
+.cta.btn-02:active {
+  background: #B8901F;
+  transform: translateY(1px);
+}
+/* `.cta`'s shorthand puts `transform` on the same 0.45s ramp as its colours,
+   which is right for a hover fill and far too slow for a press — the settle
+   arrived after the finger had left. The shorthand has to be restated to
+   retune one of its parts; colour and border keep the house timing. */
+.cta.btn-02 {
+  transition:
+    color .45s var(--ease-out-soft),
+    background-color .45s var(--ease-out-soft),
+    border-color .45s var(--ease-out-soft),
+    transform .12s var(--ease-out-soft);
+}
+
+/* ── Focus ──
+   Restated rather than inherited, because the closing band needs a
+   different colour and this is the one place the button knows that.
+
+   On the light sections the ring is brand maroon: #8F1D25 is **8.71:1**
+   on ivory, where the global gold ring (#C9A227) is 2.35:1 and would be
+   invisible. `outline-offset: 3px` puts the ring on the section ground,
+   not on the pill, so the ground is the surface it has to clear.
+
+   On `.closing` that same maroon *is* the band (#6E1420 → #8F1D25 →
+   #5C1019) — the ring would be invisible against its own colour. Ivory
+   clears it at **8.71:1** on the mid stop and **13.38:1** on the
+   darkest, comfortably past the 3:1 a non-text indicator needs. */
+.cta.btn-02:focus-visible {
+  outline: 2px solid var(--ink-maroon);
+  outline-offset: 3px;
+}
+.closing .cta.btn-02:focus-visible { outline-color: var(--color-ivory); }
+
+/* ── Reduced motion ──
+   The reflection is removed at the element, not clamped by the global
+   `animation-duration: 0.001ms` rule — with the duration clamped the
+   band would still be composited for a frame. `content: none` means it
+   never exists. The button keeps every other property: same size, same
+   label, same 7.81:1, same states. The press settle goes too, since it
+   is motion as well. */
+@media (prefers-reduced-motion: reduce) {
+  .cta.btn-02::after { content: none; }
+  .cta.btn-02:active { transform: none; }
+}
+
+/* ── Increased contrast ──
+   The rim the brief asked off comes back for users who have asked the
+   OS for more contrast. #7D620D is 5.70:1 on ivory and 4.69:1 on the
+   Neivedhyam champagne, and it stays inside the gold family — so the
+   *block* gets the 3:1 boundary a gold fill (2.38:1 on ivory) cannot
+   give itself, without changing the default look for anyone else.
+
+   **The three selectors are not redundant.** Vite emits this file *ahead*
+   of `index.css`, so a bare `.cta.btn-02` (0,2,0) would lose to
+   `.home-page .cta-gold { border-color: transparent }` (0,2,0) on source
+   order and the rim would never come back. (0,3,0) settles it. */
+@media (prefers-contrast: more) {
+  .home-page .cta.btn-02,
+  .closing .cta.btn-02,
+  .cta.cta-gold.btn-02 { border-color: var(--ink-gold-text); }
+}
+
+/* ── Forced colours ──
+   The system supplies the fill and the ink, so a translucent ivory band
+   over them is meaningless at best and a legibility risk at worst. The
+   pill takes the system's own button border instead. */
+@media (forced-colors: active) {
+  .cta.btn-02::after { content: none; }
+  /* (0,3,0) for the same source-order reason as the block above. */
+  .home-page .cta.btn-02,
+  .closing .cta.btn-02,
+  .cta.cta-gold.btn-02 { border: 1px solid ButtonBorder; }
+}

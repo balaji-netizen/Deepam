@@ -1,6 +1,6 @@
 """Frame and grade the Our Story plate to the reference direction.
 
-The source is the brass deepam photograph the section already used (previously
+The source is the brass dheepam photograph the section already used (previously
 pulled from Unsplash at runtime). Two things had to change to match the
 reference: the frame ratio (a near-square 14:15 instead of a 4:5 portrait) and
 the light. The photograph is shot flat, cool and pale; the reference is a warm
@@ -20,11 +20,11 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageEnhance, ImageFilter, ImageOps
 
 # See build-hero-plate.py — paths resolve from this file, not from a fixed drive.
-REPO = Path(__file__).resolve().parents[1]                  # Deepam Website\
+REPO = Path(__file__).resolve().parents[1]                  # Dheepam Website\
 SRC_DIR = Path(os.environ.get("DHEEPAM_IMAGES") or REPO.parent / "Images")
 
-SRC = SRC_DIR / "story-deepam-source.jpg"
-OUT = REPO / "src" / "imports" / "story-deepam.webp"
+SRC = SRC_DIR / "story-dheepam-source.jpg"
+OUT = REPO / "src" / "imports" / "story-dheepam.webp"
 PREVIEW = Path(__file__).resolve().parent / "story-plate-preview.png"
 
 W, H = 1400, 1500          # delivered plate - 14:15, matching `.story-plate`

@@ -11,9 +11,9 @@ from pathlib import Path
 from PIL import Image, ImageFilter, ImageOps
 
 # Paths are resolved from this file, never hard-coded — the repo root is
-# `Deepam Website\`, and the uncompressed sources deliberately live one level
+# `Dheepam Website\`, and the uncompressed sources deliberately live one level
 # above it (outside the repo). Set DHEEPAM_IMAGES to point elsewhere.
-REPO = Path(__file__).resolve().parents[1]                  # Deepam Website\
+REPO = Path(__file__).resolve().parents[1]                  # Dheepam Website\
 SRC_DIR = Path(os.environ.get("DHEEPAM_IMAGES") or REPO.parent / "Images")
 
 SRC = SRC_DIR / "Banner 2.png"

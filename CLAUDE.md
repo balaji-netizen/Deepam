@@ -12,23 +12,23 @@ current state and the next task.
 
 ## 1. Where things are
 
-**`Deepam Website\` is the git repository root and the Vercel project root**
-(2026-08-12). Everything that ships lives inside it. The parent `Deepam\` folder
+**`Dheepam Website\` is the git repository root and the Vercel project root**
+(2026-08-12). Everything that ships lives inside it. The parent `Dheepam\` folder
 is a local working archive — brand PDFs, source PNGs, the old zip — and is
 **deliberately not the repo**; it holds only a pointer `CLAUDE.md` now.
 
 ```
-D:\Balaji\projects\Deepam\             ← local working folder. NOT the repo.
+D:\Balaji\projects\Dheepam\             ← local working folder. NOT the repo.
 ├─ CLAUDE.md                           ← 5-line pointer to this file
 ├─ Images\                             ← drop-zone for source images. NOT in the repo:
 │                                         these are uncompressed originals (35MB+); only
 │                                         the built WebP/MP4 in src\imports\ ship.
-└─ Deepam Website\                     ← ★ THE REPO ROOT. cwd for all work.
+└─ Dheepam Website\                     ← ★ THE REPO ROOT. cwd for all work.
    ├─ CLAUDE.md                        ← this file
    ├─ PROJECT_STATUS.md                ← current state + next task
    ├─ AGENTS.md                        ← Figma Make scaffold notes (Tailwind v4, etc.)
    ├─ vercel.json                      ← build command / output dir / cache headers
-   ├─ .gitattributes                   ← NO Git LFS — see §10
+   ├─ .gitattributes                   ← NO Git LFS — see §11
    ├─ .figma\make\site.json            ← <title>, meta description, robots, favicon
    ├─ public\                          ← copied to dist\ root verbatim (favicon)
    ├─ tools\                           ← Python asset builders (dev-only, never at build)
@@ -44,8 +44,8 @@ D:\Balaji\projects\Deepam\             ← local working folder. NOT the repo.
 ## 2. Commands
 
 ```bash
-cd "D:/Balaji/projects/Deepam/Deepam Website" && npx tsc --noEmit   # type-check
-cd "D:/Balaji/projects/Deepam/Deepam Website" && npm run build      # prod build
+cd "D:/Balaji/projects/Dheepam/Dheepam Website" && npx tsc --noEmit   # type-check
+cd "D:/Balaji/projects/Dheepam/Dheepam Website" && npm run build      # prod build
 ```
 
 Dev server: use the Browser pane (`preview_start` with name `dheepam-website`),
@@ -230,7 +230,48 @@ Everything lives in `src/index.css`. Prefer changing a token over hard-coding.
   gone; the 520px cap, not a flatten, is what keeps the folded steps sane.
 - Nav height is `--nav-h` / `--nav-h-scrolled`; `<nav>` republishes the live one
   as `--nav-cur`. Read those — never hard-code a bar height again.
-**CTA — two treatments, one geometry (2026-08-12, latest)**
+**The shiny CTA — `button-02` (2026-08-13, latest)**
+- **`src/components/shadcn-space/button/button-02.{tsx,css}` is a *skin*, not a
+  second button.** It renders the site's own `<Button variant="gold">` and adds
+  one class, `.btn-02`; every geometry and type value still comes from `.cta` /
+  `.cta-gold`. **Nothing in it belongs in `index.css`** — that is what keeps a
+  homepage treatment off `.closing`'s four inner-page renders. `variant` is
+  deliberately not a prop: the Dheepam shiny CTA is the gold pill.
+- **This is not a shadcn/ui project.** There is no `components.json`, no
+  `@/components/ui`, no `cn()`, no CVA, no Radix — and none was added, because
+  the site's `<Button>` already does what shadcn's would. `shadcn-space/` is a
+  folder name from a brief, not evidence of an install. If shadcn/ui is ever
+  wanted, that is its own decision, not a side effect of adding a button.
+- **The reflection paints BEHIND the label, and that is an accessibility
+  decision.** `.cta.btn-02 > span` and `> .cta-arrow` take `z-index: 1`; the
+  `::after` band takes `0`. An ivory wash lightens ink and fill together, so
+  over the text the 0.38 peak measures **3.14:1** and the ceiling for 4.5:1 is
+  ~0.245 alpha — the effect would have to be tuned to nothing. Behind it the
+  label is **7.81:1 at rest and 11.06:1 at the peak** and no alpha can break it.
+  **Don't raise the band above the label to make it brighter.**
+- **It replaces the `::before` hover shine on the buttons that carry it**
+  (`content: none` at (0,3,1)). Two reflections crossing one pill is not a
+  treatment. The nav's Contact Us keeps `::before` and is deliberately *not*
+  shiny — it is chrome, fixed to the viewport on all five routes, and a
+  permanent loop there stops being ambient.
+- **`button-02.css` is emitted BEFORE `index.css` in the bundle.** Anything that
+  must beat a `.home-page …` / `.closing …` rule needs (0,3,0) or better —
+  a bare `.cta.btn-02` (0,2,0) loses to `.home-page .cta-gold` (0,2,0) on source
+  order. That is why the `prefers-contrast` and `forced-colors` blocks list three
+  selectors.
+- **`Footer` takes `currentPage` for exactly one reason:** `.closing` is not
+  homepage-scoped (below), so the shiny pill is chosen in JSX rather than CSS.
+  Don't "simplify" it into a `.closing …` rule — that lands on all four inner
+  pages.
+- **The focus ring on the closing band is ivory, not maroon.** `.cta`'s maroon
+  ring *is* that band — **1.00 / 1.33 / 1.54:1** against its three stops. Ivory
+  is 8.71–13.38:1. The ivory sections keep maroon at 8.71:1.
+- **`.cta`'s transition shorthand is restated on `.btn-02`** to put `transform`
+  on 0.12s. The house 0.45s is right for a hover fill and makes a press settle
+  arrive after the finger has left; retuning one part of a shorthand means
+  restating all of it.
+
+**CTA — two treatments, one geometry (2026-08-12)**
 - **The homepage gold pill carries no rim, and it shines on hover.** The
   `#7D620D` border is set to **`transparent`, not deleted** — `.cta-gold` is
   `border: 1px` and the box is `min-height`-driven, so removing the declaration
@@ -264,6 +305,8 @@ Everything lives in `src/index.css`. Prefer changing a token over hard-coding.
   0.1em tracking, 34px of horizontal padding and a 12px gap to the arrow. After
   the two reverts above that is the nav's `Contact Us`, the Lamp Lighting and
   Festivals CTAs, and the closing band's `Shop on Kaleesuwari` — four buttons.
+  **Three of those four are `<Button02>` since 2026-08-13** (all but the nav's);
+  the geometry above is unchanged, only the reflection differs.
   `.cta-solid` / `.cta-outline` are untouched and still used by the inner pages.
 - **`.cta-gold`'s 1px `--ink-gold-text` rim is load-bearing, not detailing** —
   the reasoning below is why removing it on the homepage was a *trade*, and it
@@ -342,7 +385,17 @@ off the seam.
   the closing disc) → **180s** rotation, paused off-screen. It was 240s until
   2026-08-12; 1.5°/s is still slow enough to read as ambient craft rather than a
   spinning graphic, which is the ceiling any future speed change has to respect.
-- Respect `prefers-reduced-motion` in every new animation.
+- Respect `prefers-reduced-motion` in every new animation. **Switch the element
+  off, don't lean on the global `animation-duration: 0.001ms` clamp** — a clamped
+  animation is still composited for a frame. The CTA shine (`::before`) and the
+  `button-02` reflection (`::after`) both go `content: none` / `display: none`.
+- **Ambient decorative loops on the homepage carry no pause control**, and that
+  is a precedent, not an oversight: `.mandala-spin` (180s, three nodes) and the
+  `button-02` reflection (4.6s) both loop indefinitely with only the
+  reduced-motion opt-out. WCAG 2.2.2 is the open question there; if it has to be
+  closed, the fix is a finite `animation-iteration-count`, not a chip on every
+  button. The autoplaying Lamp Lighting *video* is different — it is media, and it
+  does have one (§6).
 - **To make a CTA static, drop the `magnetic` prop from `<Button>`** — that prop
   is what wraps it in `<span class="magnetic">` for the cursor-attraction tween
   in `useReveal.ts`, and it is the only movement a button has. Keep the
@@ -392,7 +445,7 @@ off the seam.
     compress-to-WebP path; the only geometry is a 2px height trim to land
     Agarbatti on exactly 13:6. Re-run it after any swap of those two files.
   - `build-story-plate.py` — **historical.** It built the old
-    `story-deepam.webp` from `Images/story-deepam-source.jpg`, which the site no
+    `story-dheepam.webp` from `Images/story-dheepam-source.jpg`, which the site no
     longer imports. Keep it for the technique (it grows mirrored, blurred bokeh
     headroom so a wider window can be cut than the source's own height allows) —
     that is the pattern for any future plate needing reframing — but running it
@@ -738,9 +791,47 @@ those, not Tailwind's `sm:`/`lg:` (640/1024), so type and layout break together.
 Bootstrap's own components (buttons, cards, navbar, modals) are outranked by
 design and will not apply — don't reach for them.
 
-## 10. Deployment — GitHub + Vercel
+## 10. Never glue a Tailwind class to a `${` interpolation
 
-The repo root is `Deepam Website\` (§1). Vercel builds it with `npm ci` →
+```jsx
+/* BREAKS — .z-50 is never emitted */
+className={`fixed top-0 left-0 right-0 z-50${over ? ' nav-over-hero' : ''}`}
+/* CORRECT */
+className={`fixed top-0 left-0 right-0 z-50 ${over ? 'nav-over-hero' : ''}`}
+```
+
+Tailwind scans raw source text for candidates. A utility immediately followed by
+`${` is read as `z-50$…`, matches nothing, and **is silently dropped from the
+stylesheet** — no error, no warning, green build.
+
+**This took the entire navigation bar off the homepage on 2026-08-13.** With
+`.z-50` missing, the fixed `<nav>` fell to `z-index: auto`; `#hero` is positioned
+and later in tree order, so it painted over the bar. Every menu item was present,
+styled and invisible — `elementFromPoint` at each link returned the hero frame.
+**The other four utilities in the same string (`fixed top-0 left-0 right-0`)
+emitted normally** because each is followed by a space, so the bar stayed
+perfectly positioned and only the stacking was gone. That asymmetry is what makes
+this so hard to see: it presents as "the menu disappeared", not "the CSS broke".
+
+- Prefer a trailing space before the interpolation. The empty branch leaves a
+  trailing space in `class`, which is inert.
+- **This only bites Tailwind utilities.** Concatenating hand-written
+  design-system class names (`tile-plinth fold-plinth${…}` in
+  `ProductsShowcase.tsx`, `quiz-fab-wrap${…}` in `StickyCTA.tsx`) is safe —
+  those live in `index.css` unconditionally and never depend on the scanner.
+- **How to check:** grep the built CSS for the literal rule
+  (`.z-50{z-index:50}`). If a utility is in the JSX but not in
+  `dist/assets/index-*.css`, the scanner never saw it. Remember CSS escaping when
+  grepping — `gap-1.5` is `.gap-1\.5`, `left-1/2` is `.left-1\/2`.
+- **Verify stacking by hit-testing, never by eye or by `.click()`.**
+  `document.elementFromPoint(x, y)` at an element's own centre is the only check
+  that catches "visible in the DOM, covered in paint". `.click()` bypasses hit
+  testing entirely and will pass on a completely unreachable control — the same
+  trap §7 records for `.nv-track`.
+
+## 11. Deployment — GitHub + Vercel
+
+The repo root is `Dheepam Website\` (§1). Vercel builds it with `npm ci` →
 `npm run build` → `dist`, all pinned in `vercel.json`. **No environment variables
 are required** — no backend, no keys, no analytics. If that ever changes, the
 variable goes in Vercel's dashboard and never in a committed file; `.env*` is

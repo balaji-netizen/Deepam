@@ -1,12 +1,17 @@
 import logoImg from '@/imports/dheepam-neww.png'
 import closingImg from '@/imports/closing-ritual.webp'
 import Button from '@/components/Button'
+import Button02 from '@/components/shadcn-space/button/button-02'
 import type { Page } from '@/types'
 
 
 interface FooterProps {
   setPage: (p: Page) => void
   scrollToSection: (id: string) => void
+  /* The closing band belongs to the homepage but `Footer` renders under all
+     five routes, so the shiny CTA has to know which one it is on. It is the
+     only thing this prop does — see the CTA below. */
+  currentPage: Page
 }
 
 /* Lotus-bloom mask for the closing CTA photograph. A 7:6 ellipse of unit radius
@@ -88,7 +93,21 @@ const socials = [
   { label: 'YouTube', href: 'https://youtube.com', icon: <path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z" /> },
 ]
 
-export default function Footer({ setPage, scrollToSection }: FooterProps) {
+export default function Footer({ setPage, scrollToSection, currentPage }: FooterProps) {
+  /* The homepage brief (2026-08-13) is home-only and explicitly forbids
+     touching the inner pages, so the shiny pill is chosen here rather than in
+     CSS: `.closing` is not homepage-scoped (CLAUDE.md §4), and any `.closing …`
+     rule would land on all four inner pages too. One props object, two
+     renderers — identical destination, label, class and 44px box either way;
+     only the reflection differs. */
+  const closingCta = {
+    href: 'https://kaleesuwari.com',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+    className: 'closing-cta',
+    children: 'Shop on Kaleesuwari',
+  } as const
+
   const handleLink = (link: { label: string; section?: string; page?: Page; href?: string; anchor?: string }) => {
     if (link.href) { window.open(link.href, '_blank', 'noopener,noreferrer') }
     else if (link.page) {
@@ -170,21 +189,19 @@ export default function Footer({ setPage, scrollToSection }: FooterProps) {
               </p>
 
               <div data-anim="fade" data-delay="0.24" style={{ marginTop: 'calc(var(--closing-stack) * 1.6)' }}>
-                <Button
-                  href="https://kaleesuwari.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  /* Gold, like every other CTA since 2026-08-12 — and this is
-                     the one the variant was originally written for (the
-                     Kaleesuwari destination). It was `outline`, a gold hairline
-                     on the maroon band; the filled pill reads as the primary
-                     action it is, and #111 on #C9A227 is 7.71:1 with the block
-                     itself 3.68:1 against the band behind it. */
-                  variant="gold"
-                  className="closing-cta"
-                >
-                  Shop on Kaleesuwari
-                </Button>
+                {/* Gold, like every other CTA since 2026-08-12 — and this is
+                    the one the variant was originally written for (the
+                    Kaleesuwari destination). It was `outline`, a gold hairline
+                    on the maroon band; the filled pill reads as the primary
+                    action it is, and #111 on #C9A227 is 7.71:1 with the block
+                    itself 3.68:1 against the band behind it.
+
+                    On the homepage it is the shiny CTA (2026-08-13). Off the
+                    homepage it is the same pill it has always been — the brief
+                    was homepage-only and `.closing` reaches every route. */}
+                {currentPage === 'home'
+                  ? <Button02 {...closingCta} />
+                  : <Button variant="gold" {...closingCta} />}
               </div>
               {/* The second `.closing-divider` that used to sit here — a gold
                   hairline with a centre diamond — read as an underline drawn

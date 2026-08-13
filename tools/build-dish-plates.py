@@ -17,7 +17,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 # See build-hero-plate.py — paths resolve from this file, not from a fixed drive.
-REPO = Path(__file__).resolve().parents[1]                  # Deepam Website\
+REPO = Path(__file__).resolve().parents[1]                  # Dheepam Website\
 SRC = Path(os.environ.get("DHEEPAM_IMAGES") or REPO.parent / "Images")
 OUT = REPO / "src" / "imports" / "dishes"
 SHEET = Path(__file__).resolve().parent / "dish-plates-preview.png"

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import Button from '@/components/Button'
+import Button02 from '@/components/shadcn-space/button/button-02'
 import EyebrowStar from '@/components/EyebrowStar'
 import SplitLines from '@/components/SplitLines'
 import guideVideo from '@/imports/lamp-lighting-guide.mp4'
@@ -55,7 +55,7 @@ export default function LampLightingSection({ setPage }: LampLightingSectionProp
             </div>
 
             <h2 className="h2 ll-head">
-              <SplitLines lines={['The Sacred Art', <em className="serif-italic" style={{ color: '#8F1D25' }} key="d">of the Deepam</em>]} />
+              <SplitLines lines={['The Sacred Art', <em className="serif-italic" style={{ color: '#8F1D25' }} key="d">of the Dheepam</em>]} />
             </h2>
 
             <p className="lead ll-lead" data-anim="fade" data-delay="0.1">
@@ -77,9 +77,13 @@ export default function LampLightingSection({ setPage }: LampLightingSectionProp
                 button, and the hover/focus fill comes from `.cta` untouched.
                 Same decision as the closing CTA. */}
             <div data-anim="fade" data-delay="0.18">
-              <Button onClick={() => setPage('lamp-lighting')} variant="gold">
+              {/* The shiny CTA (2026-08-13): same gold pill, same 44px box,
+                  same 14px Figtree label — `Button02` only adds `.btn-02`,
+                  which swaps the once-per-hover highlight for the ambient
+                  left→right reflection. Still no `magnetic`. */}
+              <Button02 onClick={() => setPage('lamp-lighting')}>
                 Explore the Lamp Lighting Guide
-              </Button>
+              </Button02>
             </div>
           </div>
 

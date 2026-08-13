@@ -102,7 +102,12 @@ export default function Navbar({ currentPage, setPage, scrollToSection }: Navbar
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50${overHero ? ' nav-over-hero' : ''}`}
+      /* `z-50` MUST keep a space before the interpolation. Written as
+         `z-50${...}` the scanner reads the candidate as `z-50$…`, never emits
+         `.z-50`, and the bar silently falls to `z-index: auto` — where the hero
+         (later in tree order, positioned) paints straight over it and the whole
+         menu becomes invisible and unclickable. See CLAUDE.md §10. */
+      className={`fixed top-0 left-0 right-0 z-50 ${overHero ? 'nav-over-hero' : ''}`}
       style={{
         background: overHero
           ? 'transparent'

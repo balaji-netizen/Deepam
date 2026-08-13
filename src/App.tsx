@@ -90,7 +90,9 @@ export default function App() {
         {currentPage === 'knowledge' && <KnowledgePage setPage={setPage} />}
       </main>
 
-      <Footer setPage={setPage} scrollToSection={scrollToSection} />
+      {/* `currentPage` is only read by the closing band's CTA: the shiny pill is
+          a homepage treatment and `.closing` renders under every route. */}
+      <Footer setPage={setPage} scrollToSection={scrollToSection} currentPage={currentPage} />
       {/* Hidden on its own page — nothing to route to from there */}
       {currentPage !== 'knowledge' && <StickyCTA onOpen={() => setPage('knowledge')} />}
     </div>

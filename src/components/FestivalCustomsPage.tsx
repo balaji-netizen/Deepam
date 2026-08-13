@@ -10,10 +10,10 @@ interface FestivalCustomsPageProps {
 
 const customs = [
   {
-    festival: 'Karthigai Deepam',
+    festival: 'Karthigai Dheepam',
     period: 'November – December',
     image: 'https://images.unsplash.com/photo-1775427528127-a66ce3bb2bcb?w=1000&h=1250&fit=crop&auto=format',
-    overview: 'Karthigai Deepam is the festival of light celebrated in the Tamil month of Karthigai. It is one of the most ancient festivals in South India, dedicated to Lord Murugan and the divine flame of Lord Shiva atop Thiruvannamalai hill.',
+    overview: 'Karthigai Dheepam is the festival of light celebrated in the Tamil month of Karthigai. It is one of the most ancient festivals in South India, dedicated to Lord Murugan and the divine flame of Lord Shiva atop Thiruvannamalai hill.',
     rituals: [
       { name: 'Deepa Pradhakshina', desc: 'Walking around a lit lamp three times clockwise, symbolising the circumambulation of the divine light.' },
       { name: 'Home Lamp Lighting', desc: 'Households light small clay diyas all around their homes — doorways, windows, terraces — to guide the divine into every corner.' },
@@ -21,7 +21,7 @@ const customs = [
     ],
     neivedhyam: ['Thiruvannamalai Sweet Pongal', 'Nei Payasam', 'Kozhukattai', 'Akkaravadisal'],
     oilNote: 'Sesame oil diyas — Dheepam Pure Sesame Oil for maximum auspiciousness.',
-    significance: 'The Beacon (Bharani Deepam) lit atop Arunachala hill at Thiruvannamalai is believed to be Shiva himself in the form of light — and every lamp lit on this day partakes of that divine radiance.',
+    significance: 'The Beacon (Bharani Dheepam) lit atop Arunachala hill at Thiruvannamalai is believed to be Shiva himself in the form of light — and every lamp lit on this day partakes of that divine radiance.',
   },
   {
     festival: 'Navaratri',

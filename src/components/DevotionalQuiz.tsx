@@ -4,10 +4,10 @@ import Button from '@/components/Button'
 const questions = [
   { q: 'Sesame oil (gingelly oil) is considered the most auspicious for lighting diyas.', answer: true, fact: 'Sesame oil is known as "Nalla Ennai" (good oil) and holds the highest spiritual significance in lamp lighting traditions.' },
   { q: 'The lamp flame should ideally face east or north-east during morning prayers.', answer: true, fact: 'East is the direction of the rising sun and divine energy. Lamps facing east or northeast invite auspiciousness.' },
-  { q: 'Lighting a lamp in the evening is called "Deepa Aradhana".', answer: false, fact: 'The evening lamp ritual is called "Sandhya Deepam" — lit at twilight to welcome the divine into the home.' },
+  { q: 'Lighting a lamp in the evening is called "Deepa Aradhana".', answer: false, fact: 'The evening lamp ritual is called "Sandhya Dheepam" — lit at twilight to welcome the divine into the home.' },
   { q: 'Agarbattis should be placed pointing south during puja.', answer: false, fact: 'Incense should face the deity — typically east or north. South is considered inauspicious for offerings.' },
-  { q: 'Karthigai month is considered the most sacred month for lamp lighting in Tamil tradition.', answer: true, fact: 'Karthigai Deepam, the festival of lamps, falls in this month. Even a single lamp lit then is said to yield immense merit.' },
-  { q: 'A five-wick diya (Pancha Deepam) represents the five elements of nature.', answer: true, fact: 'The five flames represent Earth, Water, Fire, Air, and Space — the Pancha Bhoota that constitute all creation.' },
+  { q: 'Karthigai month is considered the most sacred month for lamp lighting in Tamil tradition.', answer: true, fact: 'Karthigai Dheepam, the festival of lamps, falls in this month. Even a single lamp lit then is said to yield immense merit.' },
+  { q: 'A five-wick diya (Pancha Dheepam) represents the five elements of nature.', answer: true, fact: 'The five flames represent Earth, Water, Fire, Air, and Space — the Pancha Bhoota that constitute all creation.' },
   { q: 'Ghee diyas should only be lit on festival days, not daily.', answer: false, fact: 'Ghee (clarified butter) diyas can and ideally should be lit daily — especially in temples and home shrines.' },
   { q: 'Incense smoke purifies the air and raises the spiritual vibration of a space.', answer: true, fact: 'Many agarbatti ingredients like sandalwood, camphor, and frankincense have antimicrobial properties confirmed by modern research.' },
   { q: 'The Tulsi plant is traditionally worshipped with a lamp on Thursday evenings.', answer: true, fact: "Thursday (Guruvar) and evenings are considered auspicious for Tulsi puja. A lamp lit before Tulsi invites Vishnu's blessings." },
