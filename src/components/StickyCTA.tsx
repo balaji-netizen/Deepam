@@ -65,7 +65,7 @@ export default function StickyCTA({ onOpen }: StickyCTAProps) {
 
         {/* Set on its side by the CSS below; the phone step hides it and leaves
             the flame alone, which is all a 320px screen has room for. */}
-        <span className="quiz-fab-label">Test Your Knowledge</span>
+        <span className="quiz-fab-label">Test Your Devotional Knowledge</span>
       </button>
     </div>
   )

@@ -82,7 +82,7 @@ const footerLinks = {
   ],
   Engage: [
     /* The quiz now lives on its own page, not a homepage section. */
-    { label: 'Test Your Knowledge', page: 'knowledge' as Page },
+    { label: 'Test Your Devotional Knowledge', page: 'knowledge' as Page },
     { label: 'FAQ', section: 'faq' },
     { label: 'Customer Care', href: 'mailto:telesales@kaleesuwari.com' },
     { label: 'Toll Free', href: 'tel:+180030003999' },
